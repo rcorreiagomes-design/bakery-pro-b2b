@@ -16,29 +16,28 @@ st.set_page_config(page_title="Bakery Pro | Intelligence", page_icon="🌾", lay
 
 st.markdown("""
     <style>
-    [data-testid="stMetricDelta"] > div:nth-child(1) {
-        color: #555555 !important;
-        font-weight: 500;
-    }
+    /* Cartões com fundo branco e obrigatoriamente texto escuro */
     [data-testid="stMetric"] {
-        background-color: #FFFFFF;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #E2E8F0;
+        background-color: #FFFFFF !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+        border: 1px solid #E2E8F0 !important;
     }
+    [data-testid="stMetric"] * {
+        color: #1E293B !important; 
+    }
+    
+    /* Botão com elevado contraste para se destacar no fundo escuro */
     .stButton>button {
-        background-color: #0F172A;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        border: none;
-        transition: all 0.3s ease;
+        background-color: #0F172A !important;
+        color: #FFFFFF !important;
+        border: 1px solid #FFFFFF !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: bold !important;
     }
     </style>
 """, unsafe_allow_html=True)
-
 # Inicializa o Firebase
 if not firebase_admin._apps:
     caminho_cred = os.path.join(os.path.dirname(__file__), "firebase_key.json")
