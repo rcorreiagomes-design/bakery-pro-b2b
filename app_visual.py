@@ -265,31 +265,30 @@ with aba_app:
             adicionar_linha("Farinha Base", f"{receita.get('farinha_g')} g", False)
             adicionar_linha("Agua Purificada", f"{receita.get('agua_ml')} ml (Alvo: {receita.get('temp_agua_c')} C)", True)
             adicionar_linha("Sal Refinado", f"{receita.get('sal_g')} g", False)
-            adicionar_linha(f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g", True)
-            
-            if not contem_gluten and 'goma_xantana_g' in receita:
-                pdf.set_text_color(185, 28, 28)
-                adicionar_linha("Goma Xantana (Agente Ligante)", f"{receita.get('goma_xantana_g')} g", False)
-                pdf.set_text_color(0, 0, 0)
-                
-    pdf.set_y(-25)
-    pdf.set_font("Arial", 'I', 8)
-    pdf.set_text_color(*cor_cinza)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
-    
-    # Em vez de 'return', guardamos o documento diretamente numa variável
-    documento_pdf = bytes(pdf.output())
+            adicionar_linha(f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g", True)     
+ if not contem_gluten and 'goma_xantana_g' in receita:
+    pdf.set_text_color(185, 28, 28)
+    adicionar_linha("Goma Xantana (Agente Ligante)", f"{receita.get('goma_xantana_g')} g", False)
+    pdf.set_text_color(0, 0, 0)
 
-# --- AQUI TERMINA O PDF E COMEÇA A INTERFACE ---
+# O rodapé do PDF
+pdf.set_y(-25)
+pdf.set_font("Arial", 'I', 8)
+pdf.set_text_color(*cor_cinza)
+pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
-# O botão de download passa a usar a variável diretamente (sem chamar funções)
+# Transforma o PDF final em bytes
+documento_pdf = bytes(pdf.output())
+
+# Cria o botão de download limpo
 st.download_button(
     label="📄 Exportar Ficha Técnica de Produção (PDF)",
     data=documento_pdf,
     file_name="ficha_tecnica_producao.pdf",
     mime="application/pdf"
 )
+
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
     if db:
