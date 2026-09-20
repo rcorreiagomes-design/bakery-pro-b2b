@@ -134,7 +134,7 @@ with aba_app:
                 with st.spinner('A extrair inteligência do rótulo e a calcular matriz matemática...'):
                     try:
                         # Define a URL base dependendo se estamos no PC ou na Nuvem
-                        URL_BACKEND = "[https://bakery-pro-b2b.onrender.com](https://bakery-pro-b2b.onrender.com)"
+                        URL_BACKEND = "https://bakery-pro-b2b.onrender.com"
                         url_api = f"{URL_BACKEND}/analisar_e_calcular/"
                         img_byte_arr = io.BytesIO()
                         img.save(img_byte_arr, format=img.format if img.format else 'JPEG')
