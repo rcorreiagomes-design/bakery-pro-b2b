@@ -280,7 +280,7 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
             
-            return pdf.output(dest='S').encode('latin-1')
+            return pdf.output()
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.download_button(
