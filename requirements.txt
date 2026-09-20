@@ -1,7 +1,7 @@
 streamlit
 fastapi
 uvicorn
-google-generativeai
+google-genai
 firebase-admin
 pandas
 Pillow
