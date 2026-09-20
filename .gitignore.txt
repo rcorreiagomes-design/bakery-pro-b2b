@@ -1,0 +1,5 @@
+# Ignorar chaves de segurança e ambientes virtuais
+firebase_key.json
+__pycache__/
+*.pyc
+.env
