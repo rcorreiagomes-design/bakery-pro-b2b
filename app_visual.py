@@ -272,21 +272,21 @@ with aba_app:
                 adicionar_linha("Goma Xantana (Agente Ligante)", f"{receita.get('goma_xantana_g')} g", False)
                 pdf.set_text_color(0, 0, 0)
                 
-            pdf.set_y(-25)
-            pdf.set_font("Arial", 'I', 8)
-            pdf.set_text_color(*cor_cinza)
-            pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-            pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
-            
-            # Finaliza a função e devolve o PDF empacotado em bytes
-    return bytes(pdf.output())
+    pdf.set_y(-25)
+    pdf.set_font("Arial", 'I', 8)
+    pdf.set_text_color(*cor_cinza)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
+    
+    # Em vez de 'return', guardamos o documento diretamente numa variável
+    documento_pdf = bytes(pdf.output())
 
-# --- AQUI TERMINA A FUNÇÃO E COMEÇA A INTERFACE ---
+# --- AQUI TERMINA O PDF E COMEÇA A INTERFACE ---
 
-# Cria o botão de download limpo chamando a função
+# O botão de download passa a usar a variável diretamente (sem chamar funções)
 st.download_button(
     label="📄 Exportar Ficha Técnica de Produção (PDF)",
-    data=gerar_pdf(),
+    data=documento_pdf,
     file_name="ficha_tecnica_producao.pdf",
     mime="application/pdf"
 )
