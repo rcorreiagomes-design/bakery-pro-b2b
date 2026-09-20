@@ -16,9 +16,10 @@ st.set_page_config(page_title="Bakery Pro | Intelligence", page_icon="🌾", lay
 
 st.markdown("""
     <style>
-    .block-container { padding-top: 2rem; padding-bottom: 2rem; }
-    h1, h2, h3 { color: #1E293B; font-family: 'Segoe UI', sans-serif; font-weight: 600; }
-    
+    [data-testid="stMetricDelta"] > div:nth-child(1) {
+        color: #555555 !important;
+        font-weight: 500;
+    }
     [data-testid="stMetric"] {
         background-color: #FFFFFF;
         padding: 20px;
@@ -26,8 +27,6 @@ st.markdown("""
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         border: 1px solid #E2E8F0;
     }
-    [data-testid="stMetricValue"] { color: #0F172A; font-size: 1.8rem; }
-    
     .stButton>button {
         background-color: #0F172A;
         color: white;
@@ -37,7 +36,6 @@ st.markdown("""
         border: none;
         transition: all 0.3s ease;
     }
-    .stButton>button:hover { background-color: #334155; transform: translateY(-1px); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -280,16 +278,18 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
             
-            return pdf.output()
+            # Finaliza a função e devolve o PDF empacotado em bytes
+    return bytes(pdf.output())
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.download_button(
-            label="🖨️ Exportar Ficha Técnica de Produção (PDF)",
-            data=gerar_pdf(),
-            file_name="BakeryPro_FichaTecnica.pdf",
-            mime="application/pdf"
-        )
+# --- AQUI TERMINA A FUNÇÃO E COMEÇA A INTERFACE ---
 
+# Cria o botão de download limpo chamando a função
+st.download_button(
+    label="📄 Exportar Ficha Técnica de Produção (PDF)",
+    data=gerar_pdf(),
+    file_name="ficha_tecnica_producao.pdf",
+    mime="application/pdf"
+)
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
     if db:
