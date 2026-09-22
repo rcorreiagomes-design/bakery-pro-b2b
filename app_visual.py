@@ -6,7 +6,7 @@ import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
-import base64  # <-- Nova biblioteca para forçar o tamanho da imagem
+import base64  
 from fpdf import FPDF
 
 # ==========================================
@@ -36,6 +36,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 # Inicializa o Firebase
 if not firebase_admin._apps:
     caminho_cred = os.path.join(os.path.dirname(__file__), "firebase_key.json")
@@ -51,12 +52,10 @@ db = firestore.client() if firebase_admin._apps else None
 caminho_logo = os.path.join(os.path.dirname(__file__), "logo.png")
 tem_logo = os.path.exists(caminho_logo)
 
-# Converte a imagem para Base64 recortando automaticamente bordas vazias/transparentes
 def obter_base64_da_imagem(caminho):
     from PIL import Image
     import io, base64
     img = Image.open(caminho)
-    # Recorta o excesso de transparência para que o logo ocupe 100% da sua área útil
     bbox = img.getbbox()
     if bbox:
         img = img.crop(bbox)
@@ -114,7 +113,6 @@ with aba_app:
     with col_upload:
         st.subheader("1. Escaneamento Inteligente")
         foto_upload = st.file_uploader("Arraste ou selecione a foto da tabela nutricional", type=["jpg", "jpeg", "png"])
-        
         processar = st.button("✨ Processar Receita com IA")
 
     if foto_upload is not None:
@@ -128,7 +126,6 @@ with aba_app:
             else:
                 with st.spinner('A extrair inteligência do rótulo e a calcular matriz matemática...'):
                     try:
-                        # Define a URL base dependendo se estamos no PC ou na Nuvem
                         URL_BACKEND = "https://bakery-pro-b2b.onrender.com"
                         url_api = f"{URL_BACKEND}/analisar_e_calcular/"
                         img_byte_arr = io.BytesIO()
@@ -172,7 +169,6 @@ with aba_app:
             """, unsafe_allow_html=True)
             
         st.subheader("2. Matriz de Produção Calculada")
-        
         st.info(f"🏷️ **Marca:** {dados_ia.get('marca')} &nbsp;|&nbsp; 🌾 **Proteína:** {dados_ia.get('proteina_g_por_50g')}g &nbsp;|&nbsp; 💧 **Hidratação:** {dados_ia.get('hidratacao_minima')}% &nbsp;|&nbsp; 🧬 **Alergénios:** {texto_gluten}")
         
         m1, m2, m3 = st.columns(3)
@@ -187,92 +183,91 @@ with aba_app:
             m5.metric("Goma Xantana", f"{receita.get('goma_xantana_g')} g", "Agente Ligante", delta_color="off")
         
         # ==========================================
-        # GERAÇÃO DE PDF
+        # GERAÇÃO DE PDF (Agora no escopo correto)
         # ==========================================
-        def gerar_pdf():
-            pdf = FPDF()
-            pdf.add_page()
-            
-            cor_primaria = (15, 23, 42)
-            cor_destaque = (217, 119, 6)
-            cor_cinza = (100, 116, 139)
-            
-            if tem_logo:
-                pdf.image(caminho_logo, x=10, y=10, w=22)
-            
-            pdf.set_font("Arial", 'B', 22)
-            pdf.set_text_color(*cor_primaria)
-            espaco = "        " if tem_logo else ""
-            pdf.cell(0, 12, txt=f"{espaco}BAKERY PRO", ln=True, align='L')
-            
-            pdf.set_font("Arial", 'I', 11)
-            pdf.set_text_color(*cor_cinza)
-            pdf.cell(0, 6, txt=f"{espaco} Ficha Técnica de Produção Artesanal", ln=True, align='L')
-            
-            pdf.set_draw_color(*cor_destaque)
-            pdf.set_line_width(0.8)
-            pdf.line(10, 32, 200, 32)
-            pdf.ln(12)
-            
-            if not contem_gluten:
-                pdf.set_fill_color(254, 242, 242)
-                pdf.set_text_color(185, 28, 28)
-                pdf.set_font("Arial", 'B', 11)
-                pdf.cell(0, 10, txt="  PROTOCOLO DE SEGURANCA: MASSA SEM GLUTEN DETETADA", border=1, fill=True, ln=True, align='C')
-                pdf.ln(5)
-                
-            pdf.set_text_color(*cor_primaria)
-            pdf.set_font("Arial", 'B', 14)
-            pdf.cell(0, 10, txt="1. Especificações da Matéria-Prima", ln=True)
-            
-            pdf.set_font("Arial", '', 11)
-            pdf.set_text_color(0, 0, 0)
-            
-            y_atual = pdf.get_y()
-            pdf.text(10, y_atual + 5, f"Marca da Farinha: {dados_ia.get('marca')}")
-            pdf.text(100, y_atual + 5, f"Hidratação Base: {dados_ia.get('hidratacao_minima')}%")
-            
-            pdf.text(10, y_atual + 12, f"Proteína (50g): {dados_ia.get('proteina_g_por_50g')}g")
-            pdf.text(100, y_atual + 12, f"Alergénios: {texto_gluten}")
-            
-            pdf.text(10, y_atual + 19, f"Temperatura Ambiente: {temp_ambiente} C")
-            pdf.text(100, y_atual + 19, f"Volume Total Previsto: {peso_desejado} g")
-            
-            pdf.ln(25)
-            
-            pdf.set_text_color(*cor_primaria)
-            pdf.set_font("Arial", 'B', 14)
-            pdf.cell(0, 10, txt="2. Matriz de Formulação (Pesos e Medidas)", ln=True)
-            
-            pdf.set_fill_color(*cor_primaria)
-            pdf.set_text_color(255, 255, 255)
+        pdf = FPDF()
+        pdf.add_page()
+        
+        cor_primaria = (15, 23, 42)
+        cor_destaque = (217, 119, 6)
+        cor_cinza = (100, 116, 139)
+        
+        if tem_logo:
+            pdf.image(caminho_logo, x=10, y=10, w=22)
+        
+        pdf.set_font("Arial", 'B', 22)
+        pdf.set_text_color(*cor_primaria)
+        espaco = "        " if tem_logo else ""
+        pdf.cell(0, 12, txt=f"{espaco}BAKERY PRO", ln=True, align='L')
+        
+        pdf.set_font("Arial", 'I', 11)
+        pdf.set_text_color(*cor_cinza)
+        pdf.cell(0, 6, txt=f"{espaco} Ficha Técnica de Produção Artesanal", ln=True, align='L')
+        
+        pdf.set_draw_color(*cor_destaque)
+        pdf.set_line_width(0.8)
+        pdf.line(10, 32, 200, 32)
+        pdf.ln(12)
+        
+        if not contem_gluten:
+            pdf.set_fill_color(254, 242, 242)
+            pdf.set_text_color(185, 28, 28)
             pdf.set_font("Arial", 'B', 11)
-            pdf.cell(95, 10, " Ingrediente", border=1, fill=True)
-            pdf.cell(95, 10, " Quantidade Específica", border=1, fill=True, ln=True)
+            pdf.cell(0, 10, txt="  PROTOCOLO DE SEGURANCA: MASSA SEM GLUTEN DETETADA", border=1, fill=True, ln=True, align='C')
+            pdf.ln(5)
             
+        pdf.set_text_color(*cor_primaria)
+        pdf.set_font("Arial", 'B', 14)
+        pdf.cell(0, 10, txt="1. Especificações da Matéria-Prima", ln=True)
+        
+        pdf.set_font("Arial", '', 11)
+        pdf.set_text_color(0, 0, 0)
+        
+        y_atual = pdf.get_y()
+        pdf.text(10, y_atual + 5, f"Marca da Farinha: {dados_ia.get('marca')}")
+        pdf.text(100, y_atual + 5, f"Hidratação Base: {dados_ia.get('hidratacao_minima')}%")
+        
+        pdf.text(10, y_atual + 12, f"Proteína (50g): {dados_ia.get('proteina_g_por_50g')}g")
+        pdf.text(100, y_atual + 12, f"Alergénios: {texto_gluten}")
+        
+        pdf.text(10, y_atual + 19, f"Temperatura Ambiente: {temp_ambiente} C")
+        pdf.text(100, y_atual + 19, f"Volume Total Previsto: {peso_desejado} g")
+        
+        pdf.ln(25)
+        
+        pdf.set_text_color(*cor_primaria)
+        pdf.set_font("Arial", 'B', 14)
+        pdf.cell(0, 10, txt="2. Matriz de Formulação (Pesos e Medidas)", ln=True)
+        
+        pdf.set_fill_color(*cor_primaria)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Arial", 'B', 11)
+        pdf.cell(95, 10, " Ingrediente", border=1, fill=True)
+        pdf.cell(95, 10, " Quantidade Específica", border=1, fill=True, ln=True)
+        
+        pdf.set_text_color(0, 0, 0)
+        pdf.set_font("Arial", '', 11)
+        
+        def adicionar_linha(ingrediente, quantidade, fundo_cinza=False):
+            if fundo_cinza:
+                pdf.set_fill_color(248, 250, 252)
+            pdf.cell(95, 10, f" {ingrediente}", border=1, fill=fundo_cinza)
+            pdf.cell(95, 10, f" {quantidade}", border=1, fill=fundo_cinza, ln=True)
+            
+        adicionar_linha("Farinha Base", f"{receita.get('farinha_g')} g", False)
+        adicionar_linha("Agua Purificada", f"{receita.get('agua_ml')} ml (Alvo: {receita.get('temp_agua_c')} C)", True)
+        adicionar_linha("Sal Refinado", f"{receita.get('sal_g')} g", False)
+        adicionar_linha(f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g", True)     
+        if not contem_gluten and 'goma_xantana_g' in receita:
+            pdf.set_text_color(185, 28, 28)
+            adicionar_linha("Goma Xantana (Agente Ligante)", f"{receita.get('goma_xantana_g')} g", False)
             pdf.set_text_color(0, 0, 0)
-            pdf.set_font("Arial", '', 11)
-            
-            def adicionar_linha(ingrediente, quantidade, fundo_cinza=False):
-                if fundo_cinza:
-                    pdf.set_fill_color(248, 250, 252)
-                pdf.cell(95, 10, f" {ingrediente}", border=1, fill=fundo_cinza)
-                pdf.cell(95, 10, f" {quantidade}", border=1, fill=fundo_cinza, ln=True)
-                
-            adicionar_linha("Farinha Base", f"{receita.get('farinha_g')} g", False)
-            adicionar_linha("Agua Purificada", f"{receita.get('agua_ml')} ml (Alvo: {receita.get('temp_agua_c')} C)", True)
-            adicionar_linha("Sal Refinado", f"{receita.get('sal_g')} g", False)
-            adicionar_linha(f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g", True)     
-            if not contem_gluten and 'goma_xantana_g' in receita:
-               pdf.set_text_color(185, 28, 28)
-               adicionar_linha("Goma Xantana (Agente Ligante)", f"{receita.get('goma_xantana_g')} g", False)
-               pdf.set_text_color(0, 0, 0)
 
-            pdf.set_y(-25)
-            pdf.set_font("Arial", 'I', 8)
-            pdf.set_text_color(*cor_cinza)
-            pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-            pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
+        pdf.set_y(-25)
+        pdf.set_font("Arial", 'I', 8)
+        pdf.set_text_color(*cor_cinza)
+        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+        pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
         try:
             try:
@@ -288,8 +283,7 @@ with aba_app:
             )
         except Exception as erro_pdf:
             st.error(f"Erro interno da biblioteca ao empacotar o PDF: {erro_pdf}")
-        except Exception as erro_pdf:
-            st.error(f"Erro interno da biblioteca ao empacotar o PDF: {erro_pdf}")
+
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
     
