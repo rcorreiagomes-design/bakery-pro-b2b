@@ -275,17 +275,18 @@ with aba_app:
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
             # Tenta gerar o PDF no formato compatível com a sua versão da biblioteca
-try:
-    documento_pdf = bytes(pdf.output())
-except Exception:
-    documento_pdf = pdf.output(dest='S').encode('latin-1')
+# O código regressa para dentro do bloco de processamento
+    try:
+        documento_pdf = bytes(pdf.output())
+    except Exception:
+        documento_pdf = pdf.output(dest='S').encode('latin-1')
 
-st.download_button(
-    label="📄 Exportar Ficha Técnica de Produção (PDF)",
-    data=documento_pdf,
-    file_name="ficha_tecnica_producao.pdf",
-    mime="application/pdf"
-)
+    st.download_button(
+        label="📄 Exportar Ficha Técnica de Produção (PDF)",
+        data=documento_pdf,
+        file_name="ficha_tecnica_producao.pdf",
+        mime="application/pdf"
+    )
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
     if db:
