@@ -274,19 +274,20 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
-            # Tenta construir o PDF em memória (sem gravar no disco) com diagnóstico de erros
+        try:
             try:
-                try:
-                    documento_pdf = bytes(pdf.output())
-                except:
-                    documento_pdf = pdf.output(dest='S').encode('latin-1')
+                documento_pdf = bytes(pdf.output())
+            except:
+                documento_pdf = pdf.output(dest='S').encode('latin-1')
 
-                st.download_button(
-                    label="📄 Exportar Ficha Técnica (PDF)",
-                    data=documento_pdf,
-                    file_name="ficha_tecnica.pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="📄 Exportar Ficha Técnica (PDF)",
+                data=documento_pdf,
+                file_name="ficha_tecnica.pdf",
+                mime="application/pdf"
+            )
+        except Exception as erro_pdf:
+            st.error(f"Erro interno da biblioteca ao empacotar o PDF: {erro_pdf}")
         except Exception as erro_pdf:
             st.error(f"Erro interno da biblioteca ao empacotar o PDF: {erro_pdf}")
 with aba_b2b:
