@@ -275,12 +275,14 @@ with aba_app:
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
             # Tenta gerar o PDF no formato compatível com a sua versão da biblioteca
-	    # O código regressa para dentro do bloco de processamento
-            try:
-                documento_pdf = bytes(pdf.output())
-            except Exception:
-                documento_pdf = pdf.output(dest='S').encode('latin-1')
+	    # 1. Salva o PDF num ficheiro temporário (método à prova de falhas)
+            pdf.output("ficha_temp.pdf")
 
+            # 2. Abre o ficheiro e prepara os dados para o botão
+            with open("ficha_temp.pdf", "rb") as ficheiro_pdf:
+                documento_pdf = ficheiro_pdf.read()
+
+            # 3. Desenha o botão de download verde
             st.download_button(
                 label="📄 Exportar Ficha Técnica de Produção (PDF)",
                 data=documento_pdf,
