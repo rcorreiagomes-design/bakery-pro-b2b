@@ -16,25 +16,19 @@ st.set_page_config(page_title="Bakery Pro | Intelligence", page_icon="🌾", lay
 
 st.markdown("""
     <style>
-    /* Cartões com fundo branco e obrigatoriamente texto escuro */
-    [data-testid="stMetric"] {
-        background-color: #FFFFFF !important;
-        padding: 15px !important;
-        border-radius: 8px !important;
-        border: 1px solid #E2E8F0 !important;
-    }
+    /* Força a cor escura nas letras dos cartões para não sumirem no fundo branco */
     [data-testid="stMetric"] * {
-        color: #1E293B !important; 
+        color: #1E293B !important;
     }
-    
-    /* Botão com elevado contraste para se destacar no fundo escuro */
-    .stButton>button {
-        background-color: #0F172A !important;
-        color: #FFFFFF !important;
-        border: 1px solid #FFFFFF !important;
+
+    /* Deixa o botão de download verde e chamativo */
+    [data-testid="stDownloadButton"] button {
+        background-color: #22C55E !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: 1px solid white !important;
         border-radius: 8px !important;
         padding: 0.5rem 1rem !important;
-        font-weight: bold !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -276,7 +270,12 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
-            documento_pdf = bytes(pdf.output())
+            try:
+                # Para versões clássicas do pacote FPDF
+                documento_pdf = pdf.output(dest='S').encode('latin-1')
+            except Exception:
+                # Para versões mais modernas (FPDF2)
+                documento_pdf = bytes(pdf.output())
 
             st.download_button(
                 label="📄 Exportar Ficha Técnica de Produção (PDF)",
