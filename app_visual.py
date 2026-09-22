@@ -16,7 +16,12 @@ st.set_page_config(page_title="Bakery Pro | Intelligence", page_icon="🌾", lay
 
 st.markdown("""
     <style>
-    /* Força a cor escura nas letras dos cartões para não sumirem no fundo branco */
+    /* Cartões com fundo branco e texto escuro para contraste perfeito */
+    [data-testid="stMetric"] {
+        background-color: #FFFFFF !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
     [data-testid="stMetric"] * {
         color: #1E293B !important;
     }
@@ -28,7 +33,6 @@ st.markdown("""
         font-weight: bold !important;
         border: 1px solid white !important;
         border-radius: 8px !important;
-        padding: 0.5rem 1rem !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -270,19 +274,18 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
-            try:
-                # Para versões clássicas do pacote FPDF
-                documento_pdf = pdf.output(dest='S').encode('latin-1')
-            except Exception:
-                # Para versões mais modernas (FPDF2)
+            # Tenta gerar o PDF no formato compatível com a sua versão da biblioteca
+	    try:
                 documento_pdf = bytes(pdf.output())
+	    except Exception:
+                documento_pdf = pdf.output(dest='S').encode('latin-1')
 
-            st.download_button(
+	    st.download_button(
                 label="📄 Exportar Ficha Técnica de Produção (PDF)",
                 data=documento_pdf,
                 file_name="ficha_tecnica_producao.pdf",
                 mime="application/pdf"
-            )
+)
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
     if db:
