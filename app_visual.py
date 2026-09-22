@@ -274,35 +274,38 @@ with aba_app:
             pdf.line(10, pdf.get_y(), 200, pdf.get_y())
             pdf.cell(0, 10, "Gerado automaticamente por Bakery Pro | Intelligence Engine B2B", align='L')
 
-            # Tenta gerar o PDF no formato compatível com a sua versão da biblioteca
-	    # 1. Salva o PDF num ficheiro temporário (método à prova de falhas)
-            pdf.output("ficha_temp.pdf")
+            # Tenta construir o PDF em memória (sem gravar no disco) com diagnóstico de erros
+            try:
+                try:
+                    documento_pdf = bytes(pdf.output())
+                except:
+                    documento_pdf = pdf.output(dest='S').encode('latin-1')
 
-            # 2. Abre o ficheiro e prepara os dados para o botão
-            with open("ficha_temp.pdf", "rb") as ficheiro_pdf:
-                documento_pdf = ficheiro_pdf.read()
-
-            # 3. Desenha o botão de download verde
-            st.download_button(
-                label="📄 Exportar Ficha Técnica de Produção (PDF)",
-                data=documento_pdf,
-                file_name="ficha_tecnica_producao.pdf",
-                mime="application/pdf"
-            )
+                st.download_button(
+                    label="📄 Exportar Ficha Técnica (PDF)",
+                    data=documento_pdf,
+                    file_name="ficha_tecnica.pdf",
+                    mime="application/pdf"
+                )
+        except Exception as erro_pdf:
+            st.error(f"Erro interno da biblioteca ao empacotar o PDF: {erro_pdf}")
 with aba_b2b:
     st.subheader("📊 Inteligência de Categoria & Tracking de Volume")
-    if db:
-        docs = db.collection("scans_farinha").stream()
-        lista_dados = [doc.to_dict() for doc in docs]
-        
-        if lista_dados:
-            df = pd.DataFrame(lista_dados)
-            m1, m2, m3 = st.columns(3)
-            m1.metric("Entradas de Telemetria", len(df))
-            m2.metric("Volume Produzido (Global)", f"{df['peso_fornada'].sum():,.0f} g")
-            m3.metric("Cobertura de Marcas", df['marca_detectada'].nunique())
+    
+    if db is None:
+        st.warning("⚠️ Conexão ao Firebase não estabelecida. Verifique se o ficheiro 'firebase_key.json' foi corretamente carregado no GitHub.")
+    else:
+        try:
+            docs = db.collection("scans_farinha").stream()
+            lista_dados = [doc.to_dict() for doc in docs]
             
-            st.markdown("---")
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.info("Aguardando sincronização de telemetria com a nuvem...")
+            if lista_dados:
+                df = pd.DataFrame(lista_dados)
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Entradas de Telemetria", len(df))
+                m2.metric("Volume Produzido (Global)", f"{df['peso_fornada'].sum():,.0f} g")
+                m3.metric("Cobertura de Marcas", df['marca_detectada'].nunique())
+            else:
+                st.info("A base de dados do Firebase está conectada, mas não tem registos.")
+        except Exception as erro_db:
+            st.error(f"Erro ao tentar ler os documentos do Firebase: {erro_db}")
