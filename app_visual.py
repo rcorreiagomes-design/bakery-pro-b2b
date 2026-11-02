@@ -234,7 +234,7 @@ with st.sidebar:
     if logo_b64:
         st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
-    st.markdown("### 🥖 Planeamento")
+    st.markdown("### 🥖 Planejamento")
     modo_planeamento = st.radio("Modo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães"])
     formato_escolhido = st.selectbox("Formato", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
