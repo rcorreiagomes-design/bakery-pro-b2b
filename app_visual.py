@@ -3,16 +3,19 @@ from PIL import Image
 import io
 import os
 import base64
+import json
 import pandas as pd
 from fpdf import FPDF
+from pydantic import BaseModel, Field
+from google import genai
+from google.genai import types
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 from motor_calculadora import CalculadoraPanificacao
-from leitor_rotulos import analisar_imagem_farinha
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA E ESTÉTICA ARTESANAL ("PÃO DA CASA" + B2B)
+# 1. CONFIGURAÇÃO DA PÁGINA E ESTÉTICA
 # ==========================================
 st.set_page_config(
     page_title="Massa Tradicional | Panificação Artesanal & B2B",
@@ -76,11 +79,6 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 0.6rem 1.4rem !important;
         box-shadow: 0 4px 10px rgba(140, 74, 39, 0.25) !important;
-        transition: all 0.2s ease;
-    }
-    .stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 15px rgba(140, 74, 39, 0.35) !important;
     }
 
     [data-testid="stDownloadButton"] button {
@@ -95,7 +93,46 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. INICIALIZAÇÃO DO FIREBASE E LOGO
+# 2. ESQUEMA DE IA E LEITOR DE RÓTULOS
+# ==========================================
+class RotuloFarinha(BaseModel):
+    marca: str = Field(description="Nome comercial ou fabricante da farinha")
+    proteina_g_por_50g: float = Field(description="Proteína em gramas para porção de 50g")
+    forca_estimada: str = Field(description="'Alta' se proteína >= 6.0, 'Média' se >= 5.0, senão 'Baixa'")
+    hidratacao_minima: int = Field(description="Hidratação recomendada (%): 65 se Alta, 60 se Média, 55 se Baixa")
+    contem_gluten: bool = Field(description="True se contiver glúten, False se for sem glúten")
+
+def analisar_imagem_farinha(img: Image.Image, chave_api: str) -> dict:
+    api_key = chave_api or os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        return {"erro": "Chave da API Gemini não fornecida."}
+
+    client = genai.Client(api_key=api_key)
+    prompt = (
+        "Analise o rótulo/tabela nutricional desta farinha. Extraia a marca, "
+        "calcule a proteína exata para 50g, classifique a força ('Alta', 'Média', 'Baixa'), "
+        "defina a hidratação mínima (65, 60 ou 55) e verifique se contém glúten (true/false)."
+    )
+    configuracao = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_schema=RotuloFarinha,
+        temperature=0.1
+    )
+
+    for modelo in ["gemini-2.5-flash", "gemini-2.0-flash"]:
+        try:
+            response = client.models.generate_content(
+                model=modelo,
+                contents=[prompt, img],
+                config=configuracao
+            )
+            return json.loads(response.text)
+        except Exception:
+            continue
+    return {"erro": "Falha na análise com a IA Gemini."}
+
+# ==========================================
+# 3. FIREBASE E LOGO
 # ==========================================
 if not firebase_admin._apps:
     caminho_cred = os.path.join(os.path.dirname(__file__), "firebase_key.json")
@@ -128,29 +165,26 @@ def limpar_texto_pdf(texto: str) -> str:
 logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 
 # ==========================================
-# 3. CABEÇALHO ARTESANAL & TECNOLÓGICO
+# 4. CABEÇALHO & BARRA LATERAL
 # ==========================================
 if logo_b64:
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 24px 30px; border-radius: 14px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 24px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(35,31,30,0.12);">
+    <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 24px 30px; border-radius: 14px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 24px; margin-bottom: 24px;">
         <div style="width: 95px; height: 95px; flex-shrink: 0;">
-            <img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));">
+            <img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
         <div>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <h1 style="margin: 0; font-size: 2.1rem; color: #F5EFE6 !important; letter-spacing: -0.01em;">Massa Tradicional</h1>
-                <span style="background: rgba(14, 165, 233, 0.18); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase;">Tecnologia de Panificação • B2B</span>
+                <h1 style="margin: 0; font-size: 2.1rem; color: #F5EFE6 !important;">Massa Tradicional</h1>
+                <span style="background: rgba(14, 165, 233, 0.18); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; font-weight: 600;">Tecnologia de Panificação • B2B</span>
             </div>
-            <p style="color: #D6C7B2; font-size: 1rem; margin: 6px 0 0 0;">Resgatando a panificação autoral com precisão matemática, enriquecimento de massa e visão computacional</p>
+            <p style="color: #D6C7B2; font-size: 1rem; margin: 6px 0 0 0;">Panificação autoral com precisão matemática e IA</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 else:
     st.title("🌾 Massa Tradicional | Tecnologia de Panificação B2B")
 
-# ==========================================
-# 4. BARRA LATERAL (PARÂMETROS, PORÇÕES E ENRIQUECIMENTO)
-# ==========================================
 FORMATOS_PADARIA = {
     "Pão de Cachorro-Quente (70g)": 70,
     "Pão de Hambúrguer / Brioche (90g)": 90,
@@ -172,22 +206,15 @@ PERFIS_ENRIQUECIMENTO = {
 
 with st.sidebar:
     if logo_b64:
-        st.markdown(
-            f'<div style="text-align: center; margin-bottom: 12px;"><img src="data:image/png;base64,{logo_b64}" style="width: 95px;"></div>',
-            unsafe_allow_html=True
-        )
+        st.markdown(f'<div style="text-align: center; margin-bottom: 12px;"><img src="data:image/png;base64,{logo_b64}" style="width: 95px;"></div>', unsafe_allow_html=True)
 
     st.markdown("### 🥖 1. Formato & Divisão")
-    modo_planeamento = st.radio(
-        "Modo de cálculo da fornada:",
-        ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães (Unidades)"]
-    )
-
-    formato_escolhido = st.selectbox("Formato do Pão / Boleamento", list(FORMATOS_PADARIA.keys()))
+    modo_planeamento = st.radio("Modo de cálculo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães (Unidades)"])
+    formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
 
     if peso_padrao == 0:
-        peso_porcao_g = st.number_input("Peso de cada unidade (g)", min_value=20, max_value=3000, value=100, step=5)
+        peso_porcao_g = st.number_input("Peso de cada unidade (g)", 20, 3000, 100, 5)
         nome_formato = "Porção Personalizada"
     elif peso_padrao == -1:
         peso_porcao_g = 0
@@ -202,73 +229,55 @@ with st.sidebar:
         if peso_porcao_g <= 0:
             peso_porcao_g = 70
             nome_formato = "Pão de Cachorro-Quente"
-        qtd_encomenda = st.number_input("Quantidade de Pães Desejada", min_value=1, max_value=500, value=50, step=1)
+        qtd_encomenda = st.number_input("Quantidade de Pães", 1, 500, 50, 1)
         peso_desejado = int(qtd_encomenda * peso_porcao_g)
-        st.info(f"⚖️ **Massa Total Calculada:** {peso_desejado} g")
+        st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
 
     st.markdown("---")
-    st.markdown("### 🧈 2. Enriquecimento da Massa")
-    perfil_escolhido = st.selectbox("Perfil de Receita", list(PERFIS_ENRIQUECIMENTO.keys()), index=1)
-    valores_perfil = PERFIS_ENRIQUECIMENTO[perfil_escolhido]
+    st.markdown("### 🧈 2. Enriquecimento")
+    perfil_escolhido = st.selectbox("Perfil", list(PERFIS_ENRIQUECIMENTO.keys()), index=1)
+    vp = PERFIS_ENRIQUECIMENTO[perfil_escolhido]
 
-    with st.expander("Ajustar Percentagens de Enriquecimento (%)", expanded=(valores_perfil is None)):
-        acucar_pct = st.slider(
-            "Açúcar (%)", 0.0, 25.0,
-            valores_perfil["acucar"] if valores_perfil else 6.0, 0.5
-        )
-        gordura_pct = st.slider(
-            "Manteiga / Banha / Óleo (%)", 0.0, 30.0,
-            valores_perfil["gordura"] if valores_perfil else 5.0, 0.5
-        )
-        leite_po_pct = st.slider(
-            "Leite em Pó (%)", 0.0, 15.0,
-            valores_perfil["leite_po"] if valores_perfil else 3.0, 0.5
-        )
-        ovos_pct = st.slider(
-            "Ovos Líquidos (%)", 0.0, 30.0,
-            valores_perfil["ovos"] if valores_perfil else 0.0, 1.0
-        )
+    with st.expander("Ajustar Percentagens (%)", expanded=(vp is None)):
+        acucar_pct = st.slider("Açúcar (%)", 0.0, 25.0, vp["acucar"] if vp else 6.0, 0.5)
+        gordura_pct = st.slider("Manteiga/Óleo (%)", 0.0, 30.0, vp["gordura"] if vp else 5.0, 0.5)
+        leite_po_pct = st.slider("Leite em Pó (%)", 0.0, 15.0, vp["leite_po"] if vp else 3.0, 0.5)
+        ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, vp["ovos"] if vp else 0.0, 1.0)
 
     st.markdown("---")
     st.markdown("### ⚙️ 3. Fermentação & Ambiente")
-    tipo_fermento = st.selectbox("Método de Fermentação", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
+    tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
     fermento_limpo = tipo_fermento.split(" ")[0]
-    sal_pct = st.slider("Percentagem de Sal (%)", 1.0, 3.5, 2.0, 0.1)
-    temp_ambiente = st.number_input("Temperatura Ambiente (°C)", 10.0, 40.0, 24.0, 0.5)
+    sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
+    temp_ambiente = st.number_input("Temp. Ambiente (°C)", 10.0, 40.0, 24.0, 0.5)
 
     st.markdown("---")
-    st.markdown("### 🔑 4. Inteligência Artificial")
+    st.markdown("### 🔑 4. Chave Gemini IA")
     chave_padrao = os.environ.get("GEMINI_API_KEY", "")
-    chave_api = st.text_input("Chave API Google Gemini", value=chave_padrao, type="password")
+    chave_api = st.text_input("Chave API", value=chave_padrao, type="password")
 
 # ==========================================
-# 5. ABAS DE NAVEGAÇÃO
+# 5. ABAS
 # ==========================================
-aba_ia, aba_manual, aba_b2b = st.tabs([
-    "📷 Scanner de Rótulo (IA)",
-    "🥖 Bancada Manual (Rápida)",
-    "📊 Telemetria B2B"
-])
+aba_ia, aba_manual, aba_b2b = st.tabs(["📷 Scanner de Rótulo (IA)", "🥖 Bancada Manual", "📊 Telemetria B2B"])
 
-# --- ABA 1: SCANNER DE RÓTULO COM IA ---
 with aba_ia:
     col_up, col_prev = st.columns([2, 1])
     with col_up:
-        st.subheader("1. Leitura Óptica da Matéria-Prima")
-        st.write("Envie a foto da tabela nutricional da farinha para calibrar a hidratação automaticamente pela proteína.")
-        foto_upload = st.file_uploader("Selecione a foto do pacote/tabela nutricional", type=["jpg", "jpeg", "png"])
-        btn_ia = st.button("✨ Analisar Farinha & Calcular Fornada")
+        st.subheader("1. Leitura Óptica")
+        foto_upload = st.file_uploader("Foto do rótulo/tabela nutricional", type=["jpg", "jpeg", "png"])
+        btn_ia = st.button("✨ Analisar Farinha & Calcular")
 
     if foto_upload is not None:
         img = Image.open(foto_upload)
         with col_prev:
-            st.image(img, caption="Rótulo carregado", use_container_width=True)
+            st.image(img, caption="Rótulo", use_container_width=True)
 
         if btn_ia:
             if not chave_api:
-                st.error("⚠️ Insira a sua Chave Google Gemini na barra lateral esquerda para usar o leitor óptico.")
+                st.error("⚠️ Insira a Chave Gemini na barra lateral.")
             else:
-                with st.spinner("Lendo tabela nutricional com Visão Computacional e calculando matriz..."):
+                with st.spinner("Analisando com IA..."):
                     dados_ia = analisar_imagem_farinha(img, chave_api)
                     if "erro" in dados_ia:
                         st.error(dados_ia["erro"])
@@ -287,38 +296,16 @@ with aba_ia:
                             leite_po_pct=leite_po_pct,
                             ovos_pct=ovos_pct
                         )
-                        receita = calc.calcular()
-                        st.session_state["resultado_atual"] = {
-                            "dados_ia": dados_ia,
-                            "receita": receita
-                        }
-                        if db is not None:
-                            try:
-                                db.collection("scans_farinha").add({
-                                    "marca_detectada": dados_ia.get("marca"),
-                                    "proteina_50g": dados_ia.get("proteina_g_por_50g"),
-                                    "hidratacao_aplicada": dados_ia.get("hidratacao_minima"),
-                                    "peso_fornada": peso_desejado,
-                                    "formato_pao": nome_formato,
-                                    "qtd_unidades": receita.get("qtd_unidades"),
-                                    "massa_enriquecida": receita.get("massa_enriquecida"),
-                                    "tipo_fermento": fermento_limpo,
-                                    "contem_gluten": dados_ia.get("contem_gluten", True),
-                                    "timestamp": firestore.SERVER_TIMESTAMP
-                                })
-                            except Exception:
-                                pass
+                        st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
 
-# --- ABA 2: CALCULADORA MANUAL DIRETA ---
 with aba_manual:
-    st.subheader("Simulador Rápido de Fornada, Enriquecimento & Porcionamento")
-    st.write("Ideal para quando já conhece a força da sua farinha e quer gerar a ficha de bancada rapidamente.")
+    st.subheader("Simulador Rápido")
     c1, c2, c3 = st.columns(3)
-    marca_manual = c1.text_input("Nome da Farinha / Receita", value="Venturelli Especial")
-    hidratacao_manual = c2.slider("Hidratação de Água/Líquido (%)", 45, 90, 60, 1)
-    gluten_manual = c3.selectbox("Presença de Glúten", ["Com Glúten (Trigo)", "Sem Glúten (+2% Goma Xantana)"])
+    marca_manual = c1.text_input("Farinha", value="Venturelli Especial")
+    hidratacao_manual = c2.slider("Hidratação (%)", 45, 90, 60, 1)
+    gluten_manual = c3.selectbox("Glúten", ["Com Glúten (Trigo)", "Sem Glúten (+2% Goma Xantana)"])
 
-    if st.button("🥖 Calcular Receita & Divisão de Bancada"):
+    if st.button("🥖 Calcular Receita"):
         tem_gluten_bool = "Com Glúten" in gluten_manual
         calc = CalculadoraPanificacao(
             peso_total_massa=peso_desejado,
@@ -346,7 +333,7 @@ with aba_manual:
         }
 
 # ==========================================
-# 6. EXIBIÇÃO DA FICHA TÉCNICA, ENRIQUECIMENTO, PORÇÕES E PDF
+# 6. EXIBIÇÃO & PDF
 # ==========================================
 if "resultado_atual" in st.session_state:
     dados_ia = st.session_state["resultado_atual"]["dados_ia"]
@@ -356,126 +343,87 @@ if "resultado_atual" in st.session_state:
 
     st.markdown("---")
     if not contem_gluten:
-        st.warning("⚠️ **PROTOCOLO SEM GLÚTEN ATIVADO:** Adicionado 2% de Goma Xantana na formulação para estrutura da rede.")
+        st.warning("⚠️ **PROTOCOLO SEM GLÚTEN:** Adicionado 2% de Goma Xantana.")
 
-    st.subheader(f"📋 Ficha de Bancada — {dados_ia.get('marca')} ({receita.get('peso_total_g')}g de Massa Total)")
-    st.markdown(
-        f"**Força Estimada:** `{dados_ia.get('forca_estimada', 'Padrão')}` &nbsp;|&nbsp; "
-        f"**Proteína (50g):** `{dados_ia.get('proteina_g_por_50g')}g` &nbsp;|&nbsp; "
-        f"**Hidratação Base:** `{receita.get('hidratacao_pct')}%` &nbsp;|&nbsp; "
-        f"**Classificação:** `{texto_gluten}`"
-    )
-
-    # Linha 1: Base da Massa
-    st.markdown("#### 🌾 1. Base de Panificação")
+    st.subheader(f"📋 Ficha de Bancada — {dados_ia.get('marca')} ({receita.get('peso_total_g')}g)")
+    
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("🌾 Farinha Base (100%)", f"{receita.get('farinha_g')} g")
-    m2.metric("💧 Água Filtrada", f"{receita.get('agua_ml')} ml", f"Temp. Ideal: {receita.get('temp_agua_c')} °C", delta_color="off")
-    m3.metric("🧂 Sal Marinho", f"{receita.get('sal_g')} g", f"{sal_pct}% sobre a farinha", delta_color="off")
-    m4.metric(f"🦠 Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g", f"Equiv. Fresco: {receita.get('fermento_fresco_equivalente_g')} g", delta_color="off")
+    m1.metric("🌾 Farinha Base", f"{receita.get('farinha_g')} g")
+    m2.metric("💧 Água", f"{receita.get('agua_ml')} ml", f"Ideal: {receita.get('temp_agua_c')} °C")
+    m3.metric("🧂 Sal", f"{receita.get('sal_g')} g")
+    m4.metric(f"🦠 Fermento", f"{receita.get('fermento_g')} g")
 
-    # Linha 2: Ingredientes de Enriquecimento (Exibe se houver pelo menos um > 0)
     if receita.get("massa_enriquecida"):
-        st.markdown("#### 🧈 2. Ingredientes de Enriquecimento (Maciez, Cor e Sabor)")
         e1, e2, e3, e4 = st.columns(4)
-        e1.metric("🍬 Açúcar", f"{receita.get('acucar_g')} g", f"{receita.get('acucar_pct')}% sobre a farinha", delta_color="off")
-        e2.metric("🧈 Manteiga / Banha", f"{receita.get('gordura_g')} g", f"{receita.get('gordura_pct')}% sobre a farinha", delta_color="off")
-        e3.metric("🥛 Leite em Pó", f"{receita.get('leite_po_g')} g", f"{receita.get('leite_po_pct')}% sobre a farinha", delta_color="off")
-        e4.metric("🥚 Ovos", f"{receita.get('ovos_g')} g", f"~{receita.get('unidades_ovos_aprox')} un. ({receita.get('ovos_pct')}%)", delta_color="off")
+        e1.metric("🍬 Açúcar", f"{receita.get('acucar_g')} g")
+        e2.metric("🧈 Manteiga", f"{receita.get('gordura_g')} g")
+        e3.metric("🥛 Leite Pó", f"{receita.get('leite_po_g')} g")
+        e4.metric("🥚 Ovos", f"{receita.get('ovos_g')} g")
 
-    # Linha 3: Divisão de Porções / Boleamento
-    st.markdown("#### ⚖️ 3. Rendimento & Boleamento na Bancada")
     p1, p2, p3 = st.columns(3)
-    p1.metric("🥖 Formato Escolhido", receita.get("nome_formato"), f"{receita.get('peso_porcao_g')} g por unidade", delta_color="off")
-    p2.metric("📦 Rendimento da Fornada", f"{receita.get('qtd_unidades')} unidades", f"Peso Total: {receita.get('peso_total_g')} g", delta_color="off")
+    p1.metric("🥖 Formato", receita.get("nome_formato"), f"{receita.get('peso_porcao_g')}g/un")
+    p2.metric("📦 Rendimento", f"{receita.get('qtd_unidades')} unidades")
+    p3.metric("✂️ Sobra", f"{receita.get('sobra_massa_g')} g")
 
-    sobra = receita.get("sobra_massa_g", 0.0)
-    if not contem_gluten and "goma_xantana_g" in receita:
-        p3.metric("🧬 Goma Xantana (2%)", f"{receita.get('goma_xantana_g')} g", f"Sobra de corte: {sobra} g", delta_color="off")
-    else:
-        p3.metric("✂️ Sobra de Bancada (Retalho)", f"{sobra} g", "Divisão exata!" if sobra == 0 else "Distribuir nos pães", delta_color="off")
-
-    # Geração segura do PDF com Base + Enriquecimento + Rendimento
+    # PDF
     pdf = FPDF()
     pdf.add_page()
     if caminho_logo:
         pdf.image(caminho_logo, x=10, y=10, w=24)
-
-    pdf.set_font("Arial", "B", 20)
-    pdf.set_text_color(35, 31, 30)
+    pdf.set_font("Arial", "B", 18)
     espaco = "          " if caminho_logo else ""
     pdf.cell(0, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA TECNICA"), ln=True)
-    pdf.set_font("Arial", "I", 11)
-    pdf.set_text_color(140, 74, 39)
-    pdf.cell(0, 6, txt=limpar_texto_pdf(f"{espaco}Tecnologia de Panificacao Artesanal & B2B"), ln=True)
-    pdf.ln(14)
+    pdf.ln(10)
 
-    pdf.set_font("Arial", "B", 12)
-    pdf.set_text_color(35, 31, 30)
-    pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa Total: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
-    pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} unidades de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')}) | Sobra: {sobra}g"), ln=True)
-    pdf.ln(4)
+    pdf.set_font("Arial", "", 11)
+    pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
+    pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"), ln=True)
+    pdf.ln(5)
 
     pdf.set_fill_color(35, 31, 30)
     pdf.set_text_color(255, 255, 255)
-    pdf.cell(95, 10, " Insumo / Etapa", border=1, fill=True)
-    pdf.cell(95, 10, " Quantidade Exata", border=1, fill=True, ln=True)
+    pdf.cell(95, 10, " Insumo", border=1, fill=True)
+    pdf.cell(95, 10, " Quantidade", border=1, fill=True, ln=True)
 
     pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Arial", "", 11)
-    linhas_pdf = [
-        ("Farinha Base (100%)", f"{receita.get('farinha_g')} g"),
-        ("Agua Filtrada", f"{receita.get('agua_ml')} ml (Temp. ideal: {receita.get('temp_agua_c')} C)"),
-        ("Sal Marinho", f"{receita.get('sal_g')} g ({sal_pct}%)"),
-        (f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g (Equiv. Fresco: {receita.get('fermento_fresco_equivalente_g')} g)"),
+    linhas = [
+        ("Farinha Base", f"{receita.get('farinha_g')} g"),
+        ("Água Filtrada", f"{receita.get('agua_ml')} ml (a {receita.get('temp_agua_c')}C)"),
+        ("Sal", f"{receita.get('sal_g')} g"),
+        (f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g"),
     ]
-
-    if receita.get("acucar_g", 0) > 0:
-        linhas_pdf.append((f"Acucar ({receita.get('acucar_pct')}%)", f"{receita.get('acucar_g')} g"))
-    if receita.get("gordura_g", 0) > 0:
-        linhas_pdf.append((f"Manteiga / Banha ({receita.get('gordura_pct')}%)", f"{receita.get('gordura_g')} g"))
-    if receita.get("leite_po_g", 0) > 0:
-        linhas_pdf.append((f"Leite em Po ({receita.get('leite_po_pct')}%)", f"{receita.get('leite_po_g')} g"))
-    if receita.get("ovos_g", 0) > 0:
-        linhas_pdf.append((f"Ovos ({receita.get('ovos_pct')}%)", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_aprox')} un.)"))
+    if receita.get("acucar_g", 0) > 0: linhas.append(("Açúcar", f"{receita.get('acucar_g')} g"))
+    if receita.get("gordura_g", 0) > 0: linhas.append(("Manteiga / Gordura", f"{receita.get('gordura_g')} g"))
+    if receita.get("leite_po_g", 0) > 0: linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
+    if receita.get("ovos_g", 0) > 0: linhas.append(("Ovos", f"{receita.get('ovos_g')} g"))
     if not contem_gluten and "goma_xantana_g" in receita:
-        linhas_pdf.append(("Goma Xantana (Sem Gluten)", f"{receita.get('goma_xantana_g')} g"))
+        linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
 
-    linhas_pdf.append(("Divisao de Bancada (Boleamento)", f"{receita.get('qtd_unidades')} un. x {receita.get('peso_porcao_g')} g ({receita.get('nome_formato')})"))
-
-    for idx, (insumo, qtd) in enumerate(linhas_pdf):
-        pdf.set_fill_color(248, 244, 238) if idx % 2 == 1 else pdf.set_fill_color(255, 255, 255)
-        pdf.cell(95, 10, limpar_texto_pdf(f" {insumo}"), border=1, fill=True)
-        pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, fill=True, ln=True)
+    for ins, qtd in linhas:
+        pdf.cell(95, 10, limpar_texto_pdf(f" {ins}"), border=1)
+        pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
 
     saida_pdf = pdf.output(dest="S")
     bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else bytes(saida_pdf)
 
-    st.markdown("<br>", unsafe_allow_html=True)
     st.download_button(
-        label="📄 Baixar Ficha Técnica Completa (PDF)",
+        label="📄 Baixar Ficha Técnica (PDF)",
         data=bytes_pdf,
-        file_name=f"ficha_tecnica_{receita.get('nome_formato').lower().replace(' ', '_')}_{int(receita.get('peso_total_g'))}g.pdf",
+        file_name=f"ficha_tecnica_{int(receita.get('peso_total_g'))}g.pdf",
         mime="application/pdf"
     )
 
-# --- ABA 3: PAINEL ANALÍTICO B2B ---
 with aba_b2b:
-    st.subheader("📊 Inteligência de Categoria & Volume de Fornadas")
+    st.subheader("📊 Telemetria B2B")
     if db is None:
-        st.info("💡 Para ativar a gravação em nuvem de todas as fornadas, adicione o ficheiro `firebase_key.json` na raiz do projeto.")
+        st.info("Firebase não configurado (opcional).")
     else:
         try:
             docs = db.collection("scans_farinha").stream()
-            lista_dados = [doc.to_dict() for doc in docs]
-            if lista_dados:
-                df = pd.DataFrame(lista_dados)
-                k1, k2, k3 = st.columns(3)
-                k1.metric("Fornadas Processadas", len(df))
-                k2.metric("Volume Total de Massa", f"{df['peso_fornada'].sum():,.0f} g")
-                k3.metric("Marcas Mapeadas", df["marca_detectada"].nunique())
-                st.dataframe(df.drop(columns=["receita_gerada"], errors="ignore"), use_container_width=True)
+            lista = [d.to_dict() for d in docs]
+            if lista:
+                st.dataframe(pd.DataFrame(lista), use_container_width=True)
             else:
-                st.info("Nenhum lote registado na base de dados ainda.")
+                st.info("Nenhum registo na base de dados.")
         except Exception as e:
-            st.error(f"Erro ao ler telemetria: {e}")
+            st.error(f"Erro: {e}")
