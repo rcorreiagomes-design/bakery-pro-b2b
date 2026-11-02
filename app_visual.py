@@ -78,7 +78,6 @@ st.markdown("""
         border: none !important;
         border-radius: 8px !important;
         padding: 0.6rem 1.4rem !important;
-        box-shadow: 0 4px 10px rgba(140, 74, 39, 0.25) !important;
     }
 
     [data-testid="stDownloadButton"] button {
@@ -178,7 +177,7 @@ if logo_b64:
                 <h1 style="margin: 0; font-size: 2.1rem; color: #F5EFE6 !important;">Massa Tradicional</h1>
                 <span style="background: rgba(14, 165, 233, 0.18); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.72rem; padding: 3px 10px; border-radius: 20px; font-weight: 600;">Tecnologia de Panificação • B2B</span>
             </div>
-            <p style="color: #D6C7B2; font-size: 1rem; margin: 6px 0 0 0;">Panificação autoral com precisão matemática e IA</p>
+            <p style="color: #D6C7B2; font-size: 1rem; margin: 6px 0 0 0;">Panificação autoral com precisão matemática, IA e custos integrados</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -245,14 +244,27 @@ with st.sidebar:
         ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, vp["ovos"] if vp else 0.0, 1.0)
 
     st.markdown("---")
-    st.markdown("### ⚙️ 3. Fermentação & Ambiente")
+    st.markdown("### 💰 3. Custos & Precificação (R$/kg)")
+    with st.expander("Definir Custos dos Insumos", expanded=False):
+        c_farinha = st.number_input("Farinha (R$/kg)", 2.0, 20.0, 5.50, 0.5)
+        c_fermento = st.number_input("Fermento (R$/kg)", 10.0, 100.0, 35.0, 1.0)
+        c_acucar = st.number_input("Açúcar (R$/kg)", 2.0, 15.0, 4.50, 0.5)
+        c_gordura = st.number_input("Manteiga/Gordura (R$/kg)", 5.0, 60.0, 18.0, 1.0)
+        c_leite = st.number_input("Leite em Pó (R$/kg)", 10.0, 80.0, 30.0, 1.0)
+        c_ovos = st.number_input("Ovos (R$/kg)", 5.0, 30.0, 15.0, 1.0)
+        c_sal = st.number_input("Sal (R$/kg)", 1.0, 10.0, 3.0, 0.5)
+    
+    margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
+
+    st.markdown("---")
+    st.markdown("### ⚙️ 4. Fermentação & Ambiente")
     tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
     fermento_limpo = tipo_fermento.split(" ")[0]
     sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
     temp_ambiente = st.number_input("Temp. Ambiente (°C)", 10.0, 40.0, 24.0, 0.5)
 
     st.markdown("---")
-    st.markdown("### 🔑 4. Chave Gemini IA")
+    st.markdown("### 🔑 5. Chave Gemini IA")
     chave_padrao = os.environ.get("GEMINI_API_KEY", "")
     chave_api = st.text_input("Chave API", value=chave_padrao, type="password")
 
@@ -294,7 +306,15 @@ with aba_ia:
                             acucar_pct=acucar_pct,
                             gordura_pct=gordura_pct,
                             leite_po_pct=leite_po_pct,
-                            ovos_pct=ovos_pct
+                            ovos_pct=ovos_pct,
+                            custo_farinha_kg=c_farinha,
+                            custo_fermento_kg=c_fermento,
+                            custo_acucar_kg=c_acucar,
+                            custo_gordura_kg=c_gordura,
+                            custo_leite_po_kg=c_leite,
+                            custo_ovos_kg=c_ovos,
+                            custo_sal_kg=c_sal,
+                            margem_lucro_pct=margem_lucro
                         )
                         st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
 
@@ -305,7 +325,7 @@ with aba_manual:
     hidratacao_manual = c2.slider("Hidratação (%)", 45, 90, 60, 1)
     gluten_manual = c3.selectbox("Glúten", ["Com Glúten (Trigo)", "Sem Glúten (+2% Goma Xantana)"])
 
-    if st.button("🥖 Calcular Receita"):
+    if st.button("🥖 Calcular Receita & Custos"):
         tem_gluten_bool = "Com Glúten" in gluten_manual
         calc = CalculadoraPanificacao(
             peso_total_massa=peso_desejado,
@@ -319,7 +339,15 @@ with aba_manual:
             acucar_pct=acucar_pct,
             gordura_pct=gordura_pct,
             leite_po_pct=leite_po_pct,
-            ovos_pct=ovos_pct
+            ovos_pct=ovos_pct,
+            custo_farinha_kg=c_farinha,
+            custo_fermento_kg=c_fermento,
+            custo_acucar_kg=c_acucar,
+            custo_gordura_kg=c_gordura,
+            custo_leite_po_kg=c_leite,
+            custo_ovos_kg=c_ovos,
+            custo_sal_kg=c_sal,
+            margem_lucro_pct=margem_lucro
         )
         st.session_state["resultado_atual"] = {
             "dados_ia": {
@@ -365,6 +393,13 @@ if "resultado_atual" in st.session_state:
     p2.metric("📦 Rendimento", f"{receita.get('qtd_unidades')} unidades")
     p3.metric("✂️ Sobra", f"{receita.get('sobra_massa_g')} g")
 
+    # Bloco Financeiro e Precificação
+    st.markdown("#### 💰 Análise de Custos & Precificação Comercial")
+    f1, f2, f3 = st.columns(3)
+    f1.metric("💵 Custo Total da Fornada", f"R$ {receita.get('custo_total_fornada'):.2f}")
+    f2.metric("🏷️ Custo por Unidade (Pão)", f"R$ {receita.get('custo_por_unidade'):.2f}")
+    f3.metric("💡 Preço Sugerido de Venda", f"R$ {receita.get('preco_sugerido_unidade'):.2f}", f"Margem: {receita.get('margem_lucro_pct')}%")
+
     # PDF
     pdf = FPDF()
     pdf.add_page()
@@ -372,12 +407,13 @@ if "resultado_atual" in st.session_state:
         pdf.image(caminho_logo, x=10, y=10, w=24)
     pdf.set_font("Arial", "B", 18)
     espaco = "          " if caminho_logo else ""
-    pdf.cell(0, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA TECNICA"), ln=True)
+    pdf.cell(0, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA TECNICA & CUSTOS"), ln=True)
     pdf.ln(10)
 
     pdf.set_font("Arial", "", 11)
     pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
     pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"), ln=True)
+    pdf.cell(0, 8, txt=limpar_texto_pdf(f"Custo Total: R$ {receita.get('custo_total_fornada')} | Custo/Un: R$ {receita.get('custo_por_unidade')} | Preco Sugerido: R$ {receita.get('preco_sugerido_unidade')} ({receita.get('margem_lucro_pct')}%)"), ln=True)
     pdf.ln(5)
 
     pdf.set_fill_color(35, 31, 30)
@@ -407,9 +443,9 @@ if "resultado_atual" in st.session_state:
     bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else bytes(saida_pdf)
 
     st.download_button(
-        label="📄 Baixar Ficha Técnica (PDF)",
+        label="📄 Baixar Ficha Técnica & Custos (PDF)",
         data=bytes_pdf,
-        file_name=f"ficha_tecnica_{int(receita.get('peso_total_g'))}g.pdf",
+        file_name=f"ficha_tecnica_custos_{int(receita.get('peso_total_g'))}g.pdf",
         mime="application/pdf"
     )
 
