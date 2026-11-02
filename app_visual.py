@@ -35,10 +35,22 @@ st.markdown("""
     }
     h1, h2, h3, h4, p, span, label {
         font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #2B2118;
     }
     h1, h2, h3, h4 {
         font-family: 'Playfair Display', serif !important;
         color: #231F1E !important;
+    }
+
+    /* CORREÇÃO DO CONTRASTE DAS ABAS (TABS) NO CORPO PRINCIPAL */
+    button[data-baseweb="tab"] {
+        color: #231F1E !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #C87D32 !important;
+        border-bottom-color: #C87D32 !important;
     }
 
     /* BARRA LATERAL - Cores corrigidas para total legibilidade */
@@ -153,7 +165,6 @@ def limpar_texto_pdf(texto: str) -> str:
 
 logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 
-# Chave API obtida de forma segura via st.secrets ou variável de ambiente (sem expor na interface)
 chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 # ==========================================
@@ -358,6 +369,8 @@ if "resultado_atual" in st.session_state:
     pdf.ln(10)
 
     pdf.set_font("Arial", "", 11)
+    peso_total_int = int(receita.get('peso_total_g', 0))
+    nome_formato_limpo = str(receita.get('nome_formato', 'pao')).lower().replace(' ', '_')
     pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa Total: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
     pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"), ln=True)
     pdf.cell(0, 8, txt=limpar_texto_pdf(f"Custo Total: R$ {receita.get('custo_total_fornada')} | Custo/Un: R$ {receita.get('custo_por_unidade')} | Preco Sugerido: R$ {receita.get('preco_sugerido_unidade')} ({receita.get('margem_lucro_pct')}%)"), ln=True)
@@ -377,7 +390,7 @@ if "resultado_atual" in st.session_state:
     ]
     if receita.get("acucar_g", 0) > 0: linhas.append(("Açúcar", f"{receita.get('acucar_g')} g"))
     if receita.get("gordura_g", 0) > 0: linhas.append(("Manteiga / Gordura", f"{receita.get('gordura_g')} g"))
-    if receita.get("leite_po_g", 0) > 0: linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
+    if receita.get('leite_po_g', 0) > 0: linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
     if receita.get("ovos_g", 0) > 0: linhas.append(("Ovos", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)"))
     if not contem_gluten and "goma_xantana_g" in receita:
         linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
@@ -387,9 +400,26 @@ if "resultado_atual" in st.session_state:
         pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
 
     saida_pdf = pdf.output(dest="S")
-    bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else bytes(saida_pdf)
+    bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else FPDF.output(pdf, dest="S").encode("latin-1")
 
     st.download_button(
         label="📄 Baixar Ficha Técnica em PDF",
         data=bytes_pdf,
-        file_name=f"ficha_tecnica_{int
+        file_name=f"ficha_tecnica_{nome_formato_limpo}_{peso_total_int}g.pdf",
+        mime="application/pdf"
+    )
+
+with aba_b2b:
+    st.subheader("📊 Telemetria B2B")
+    if db is None:
+        st.info("Firebase não configurado.")
+    else:
+        try:
+            docs = db.collection("scans_farinha").stream()
+            lista = [d.to_dict() for d in docs]
+            if lista:
+                st.dataframe(pd.DataFrame(lista), use_container_width=True)
+            else:
+                st.info("Nenhum registo na base de dados.")
+        except Exception as e:
+            st.error(f"Erro: {e}")
