@@ -15,7 +15,7 @@ from firebase_admin import credentials, firestore
 from motor_calculadora import CalculadoraPanificacao
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA
+# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA "PÃO DA CASA"
 # ==========================================
 st.set_page_config(
     page_title="Massa Tradicional | Panificação Artesanal & B2B",
@@ -38,23 +38,23 @@ st.markdown("""
         color: #231F1E !important;
     }
 
-    /* TÍTULO E SUBTÍTULO DO BANNER ESCURO */
+    /* TÍTULO E SUBTÍTULO DO BANNER ESCURO (Estilo Pão da Casa) */
     .banner-container h1 {
-        color: #F5EFE6 !important;
+        color: #FCEDC9 !important;
         font-family: 'Playfair Display', serif !important;
     }
     .banner-container p {
         color: #D6C7B2 !important;
     }
 
-    /* ABAS (TABS) NO TOPO */
+    /* ABAS (TABS) NO TOPO - Contraste Perfeito */
     button[data-baseweb="tab"] {
         background-color: transparent !important;
     }
     button[data-baseweb="tab"] p, 
     button[data-baseweb="tab"] div, 
     button[data-baseweb="tab"] span {
-        color: #4A3B32 !important;
+        color: #231F1E !important;
         font-weight: 600 !important;
         font-size: 1.05rem !important;
     }
@@ -67,9 +67,9 @@ st.markdown("""
         border-bottom-color: #C87D32 !important;
     }
 
-    /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS */
+    /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS (Fundo Claro e Legível) */
     [data-testid="stFileUploader"] section {
-        background-color: #F4ECE1 !important;
+        background-color: #FCEDC9 !important;
         border: 2px dashed #C87D32 !important;
     }
     [data-testid="stFileUploader"] section * {
@@ -77,11 +77,11 @@ st.markdown("""
     }
     [data-testid="stFileUploader"] button {
         background-color: #231F1E !important;
-        color: #FFFFFF !important;
+        color: #FCEDC9 !important;
         border: none !important;
     }
     [data-testid="stFileUploader"] button * {
-        color: #FFFFFF !important;
+        color: #FCEDC9 !important;
     }
 
     /* OTIMIZAÇÃO DA BARRA LATERAL (Compacta, sem rolagem) */
@@ -212,7 +212,7 @@ if logo_b64:
     <div class="banner-container" style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
         <div style="width: 80px; height: 80px; flex-shrink: 0;"><img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;"></div>
         <div>
-            <h1 style="margin: 0; font-size: 1.9rem; color: #F5EFE6 !important;">Massa Tradicional</h1>
+            <h1 style="margin: 0; font-size: 1.9rem; color: #FCEDC9 !important;">Massa Tradicional</h1>
             <p style="color: #D6C7B2 !important; font-size: 0.92rem; margin: 2px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
@@ -234,7 +234,7 @@ with st.sidebar:
     if logo_b64:
         st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
-    st.markdown("### 🥖 Planejamento")
+    st.markdown("### 🥖 Planeamento")
     modo_planeamento = st.radio("Modo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães"])
     formato_escolhido = st.selectbox("Formato", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
