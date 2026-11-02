@@ -15,7 +15,7 @@ from firebase_admin import credentials, firestore
 from motor_calculadora import CalculadoraPanificacao
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA (CSS CORRIGIDO)
+# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA
 # ==========================================
 st.set_page_config(
     page_title="Massa Tradicional | Panificação Artesanal & B2B",
@@ -49,7 +49,6 @@ st.markdown("""
     section[data-testid="stSidebar"] * {
         color: #F5EFE6 !important;
     }
-    /* Força inputs, selects e caixas de texto da barra lateral a terem texto branco visível */
     section[data-testid="stSidebar"] input, 
     section[data-testid="stSidebar"] select,
     section[data-testid="stSidebar"] div[data-baseweb="select"] * {
@@ -104,11 +103,10 @@ class RotuloFarinha(BaseModel):
     contem_gluten: bool = Field(description="True se contiver glúten, False se for sem glúten")
 
 def analisar_imagem_farinha(img: Image.Image, chave_api: str) -> dict:
-    api_key = chave_api or os.environ.get("GEMINI_API_KEY", "")
-    if not api_key:
-        return {"erro": "Chave da API Gemini não fornecida."}
+    if not chave_api:
+        return {"erro": "Chave da API Gemini não configurada no servidor."}
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=chave_api)
     prompt = "Analise o rótulo/tabela nutricional desta farinha. Extraia a marca, proteína por 50g, força, hidratação mínima e contem_gluten (true/false)."
     configuracao = types.GenerateContentConfig(
         response_mime_type="application/json",
@@ -154,6 +152,9 @@ def limpar_texto_pdf(texto: str) -> str:
     return str(texto).encode('latin-1', 'replace').decode('latin-1')
 
 logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
+
+# Chave API obtida de forma segura via st.secrets ou variável de ambiente (sem expor na interface)
+chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 # ==========================================
 # 4. CABEÇALHO & BARRA LATERAL
@@ -213,10 +214,6 @@ with st.sidebar:
     fermento_limpo = tipo_fermento.split(" ")[0]
     sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
     temp_ambiente = st.number_input("Temp. Ambiente (°C)", 10.0, 40.0, 24.0, 0.5)
-
-    st.markdown("---")
-    chave_padrao = os.environ.get("GEMINI_API_KEY", "")
-    chave_api = st.text_input("Chave API Gemini", value=chave_padrao, type="password")
 
 # ==========================================
 # 5. ABAS CENTRAIS
@@ -279,10 +276,13 @@ with aba_calc:
         with st.spinner("Processando cálculo matemático e inteligência..."):
             dados_ia = {"marca": "Farinha Padrão / Manual", "proteina_g_por_50g": 6.0, "forca_estimada": "Alta", "hidratacao_minima": 60, "contem_gluten": True}
             
-            if foto_upload is not None and chave_api:
-                res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
-                if "erro" not in res_ia:
-                    dados_ia = res_ia
+            if foto_upload is not None:
+                if not chave_api:
+                    st.error("⚠️ Chave API Gemini não configurada nas Secrets do Streamlit.")
+                else:
+                    res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
+                    if "erro" not in res_ia:
+                        dados_ia = res_ia
 
             calc = CalculadoraPanificacao(
                 peso_total_massa=peso_desejado,
@@ -392,21 +392,4 @@ if "resultado_atual" in st.session_state:
     st.download_button(
         label="📄 Baixar Ficha Técnica em PDF",
         data=bytes_pdf,
-        file_name=f"ficha_tecnica_{int(receita.get('peso_total_g'))}g.pdf",
-        mime="application/pdf"
-    )
-
-with aba_b2b:
-    st.subheader("📊 Telemetria B2B")
-    if db is None:
-        st.info("Firebase não configurado.")
-    else:
-        try:
-            docs = db.collection("scans_farinha").stream()
-            lista = [d.to_dict() for d in docs]
-            if lista:
-                st.dataframe(pd.DataFrame(lista), use_container_width=True)
-            else:
-                st.info("Nenhum registo na base de dados.")
-        except Exception as e:
-            st.error(f"Erro: {e}")
+        file_name=f"ficha_tecnica_{int
