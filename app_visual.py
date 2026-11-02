@@ -42,6 +42,14 @@ st.markdown("""
         color: #231F1E !important;
     }
 
+    /* CABEÇALHO PRINCIPAL - Cores forçadas para contraste perfeito no fundo escuro */
+    .cabecalho-titulo {
+        color: #F5EFE6 !important;
+    }
+    .cabecalho-sub {
+        color: #D6C7B2 !important;
+    }
+
     /* CORREÇÃO DO CONTRASTE DAS ABAS (TABS) NO CORPO PRINCIPAL */
     button[data-baseweb="tab"] {
         color: #231F1E !important;
@@ -51,6 +59,15 @@ st.markdown("""
     button[data-baseweb="tab"][aria-selected="true"] {
         color: #C87D32 !important;
         border-bottom-color: #C87D32 !important;
+    }
+
+    /* CORREÇÃO DA CAIXA DE UPLOAD DE ARQUIVOS */
+    [data-testid="stFileUploader"] section {
+        background-color: #F4ECE1 !important;
+        border: 2px dashed #C87D32 !important;
+    }
+    [data-testid="stFileUploader"] section * {
+        color: #231F1E !important;
     }
 
     /* BARRA LATERAL - Cores corrigidas para total legibilidade */
@@ -175,8 +192,8 @@ if logo_b64:
     <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 22px 28px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
         <div style="width: 85px; height: 85px; flex-shrink: 0;"><img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;"></div>
         <div>
-            <h1 style="margin: 0; font-size: 2rem; color: #F5EFE6 !important;">Massa Tradicional</h1>
-            <p style="color: #D6C7B2; font-size: 0.95rem; margin: 4px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
+            <h1 class="cabecalho-titulo" style="margin: 0; font-size: 2rem;">Massa Tradicional</h1>
+            <p class="cabecalho-sub" style="font-size: 0.95rem; margin: 4px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
