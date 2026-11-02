@@ -15,7 +15,7 @@ from firebase_admin import credentials, firestore
 from motor_calculadora import CalculadoraPanificacao
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA
+# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA COMPACTA
 # ==========================================
 st.set_page_config(
     page_title="Massa Tradicional | Panificação Artesanal & B2B",
@@ -35,45 +35,28 @@ st.markdown("""
     }
     h1, h2, h3, h4, p, span, label {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #2B2118;
     }
     h1, h2, h3, h4 {
         font-family: 'Playfair Display', serif !important;
         color: #231F1E !important;
     }
 
-    /* CABEÇALHO PRINCIPAL - Cores forçadas para contraste perfeito no fundo escuro */
-    .cabecalho-titulo {
+    /* CORREÇÃO DEFINITIVA DO TÍTULO NO BANNER ESCURO */
+    div[data-testid="stMarkdownContainer"] h1.cabecalho-titulo,
+    h1.cabecalho-titulo, span.cabecalho-titulo {
         color: #F5EFE6 !important;
+        font-family: 'Playfair Display', serif !important;
     }
-    .cabecalho-sub {
+    p.cabecalho-sub, div.cabecalho-sub {
         color: #D6C7B2 !important;
     }
 
-    /* CORREÇÃO DO CONTRASTE DAS ABAS (TABS) NO CORPO PRINCIPAL */
-    button[data-baseweb="tab"] {
-        color: #231F1E !important;
-        font-weight: 600 !important;
-        font-size: 1.05rem !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #C87D32 !important;
-        border-bottom-color: #C87D32 !important;
-    }
-
-    /* CORREÇÃO DA CAIXA DE UPLOAD DE ARQUIVOS */
-    [data-testid="stFileUploader"] section {
-        background-color: #F4ECE1 !important;
-        border: 2px dashed #C87D32 !important;
-    }
-    [data-testid="stFileUploader"] section * {
-        color: #231F1E !important;
-    }
-
-    /* BARRA LATERAL - Cores corrigidas para total legibilidade */
+    /* OTIMIZAÇÃO DA BARRA LATERAL (Elimina necessidade de rolar) */
     section[data-testid="stSidebar"] {
         background-color: #231F1E !important;
         border-right: 2px solid #C87D32;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
     section[data-testid="stSidebar"] * {
         color: #F5EFE6 !important;
@@ -84,8 +67,33 @@ st.markdown("""
         color: #FFFFFF !important;
         background-color: #362C28 !important;
     }
-    section[data-testid="stSidebar"] [data-baseweb="tag"] * {
-        color: #FFFFFF !important;
+    /* Compacta os espaços entre widgets na barra lateral */
+    section[data-testid="stSidebar"] div.stVerticalBlock > div {
+        margin-bottom: -0.5rem !important;
+    }
+    section[data-testid="stSidebar"] hr {
+        margin: 0.6rem 0 !important;
+        border-color: #C87D32 !important;
+    }
+
+    /* CONTRASTE DAS ABAS NO CORPO PRINCIPAL */
+    button[data-baseweb="tab"] {
+        color: #231F1E !important;
+        font-weight: 600 !important;
+        font-size: 1.05rem !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #C87D32 !important;
+        border-bottom-color: #C87D32 !important;
+    }
+
+    /* CAIXA DE UPLOAD DE ARQUIVOS */
+    [data-testid="stFileUploader"] section {
+        background-color: #F4ECE1 !important;
+        border: 2px dashed #C87D32 !important;
+    }
+    [data-testid="stFileUploader"] section * {
+        color: #231F1E !important;
     }
 
     /* Cartões e Métricas */
@@ -94,7 +102,7 @@ st.markdown("""
         border: 1px solid #E6D7C3 !important;
         border-left: 5px solid #C87D32 !important;
         border-radius: 10px !important;
-        padding: 16px !important;
+        padding: 14px !important;
     }
     [data-testid="stMetricLabel"] * {
         color: #7A634E !important;
@@ -185,15 +193,15 @@ logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 # ==========================================
-# 4. CABEÇALHO & BARRA LATERAL
+# 4. CABEÇALHO & BARRA LATERAL COMPACTA
 # ==========================================
 if logo_b64:
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 22px 28px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
-        <div style="width: 85px; height: 85px; flex-shrink: 0;"><img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;"></div>
+    <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
+        <div style="width: 80px; height: 80px; flex-shrink: 0;"><img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;"></div>
         <div>
-            <h1 class="cabecalho-titulo" style="margin: 0; font-size: 2rem;">Massa Tradicional</h1>
-            <p class="cabecalho-sub" style="font-size: 0.95rem; margin: 4px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
+            <h1 class="cabecalho-titulo" style="margin: 0; font-size: 1.9rem; color: #F5EFE6 !important;">Massa Tradicional</h1>
+            <p class="cabecalho-sub" style="color: #D6C7B2 !important; font-size: 0.92rem; margin: 2px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -212,9 +220,9 @@ FORMATOS_PADARIA = {
 
 with st.sidebar:
     if logo_b64:
-        st.markdown(f'<div style="text-align: center; margin-bottom: 10px;"><img src="data:image/png;base64,{logo_b64}" style="width: 80px;"></div>', unsafe_allow_html=True)
+        st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
-    st.markdown("### 🥖 Planeamento de Produção")
+    st.markdown("### 🥖 Planeamento")
     modo_planeamento = st.radio("Modo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães"])
     formato_escolhido = st.selectbox("Formato", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
