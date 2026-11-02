@@ -1,7 +1,7 @@
 class CalculadoraPanificacao:
     """
     Motor central para cálculo de percentagem de padeiro reversa, enriquecimento de massa,
-    divisão de bancada e custos unitários de produção.
+    divisão de bancada e custos unitários (tratando ovos por unidade).
     """
     def __init__(
         self,
@@ -17,16 +17,15 @@ class CalculadoraPanificacao:
         gordura_pct: float = 0.0,
         leite_po_pct: float = 0.0,
         ovos_pct: float = 0.0,
-        # Custos por kg/litro dos insumos (BRL/USD)
+        # Custos dos insumos
         custo_farinha_kg: float = 5.0,
-        custo_agua_litro: float = 0.01,
         custo_sal_kg: float = 3.0,
         custo_fermento_kg: float = 35.0,
         custo_acucar_kg: float = 4.5,
         custo_gordura_kg: float = 18.0,
         custo_leite_po_kg: float = 30.0,
-        custo_ovos_kg: float = 15.0,
-        margem_lucro_pct: float = 100.0  # Ex: 100% de margem (multiplicador 2.0x)
+        custo_ovo_unidade: float = 0.75,  # Preço por unidade de ovo (ex: R$ 0,75 cada)
+        margem_lucro_pct: float = 100.0
     ):
         self.peso_total = float(peso_total_massa)
         self.hidratacao = float(hidratacao_pct) / 100.0
@@ -42,15 +41,13 @@ class CalculadoraPanificacao:
         self.leite_po = float(leite_po_pct) / 100.0
         self.ovos = float(ovos_pct) / 100.0
 
-        # Tabela de custos
         self.c_farinha = custo_farinha_kg
-        self.c_agua = custo_agua_litro
         self.c_sal = custo_sal_kg
         self.c_fermento = custo_fermento_kg
         self.c_acucar = custo_acucar_kg
         self.c_gordura = custo_gordura_kg
         self.c_leite_po = custo_leite_po_kg
-        self.c_ovos = custo_ovos_kg
+        self.c_ovo_unidade = custo_ovo_unidade
         self.margem_lucro = float(margem_lucro_pct) / 100.0
 
         if self.tipo_fermento.lower() == "levain":
@@ -85,6 +82,10 @@ class CalculadoraPanificacao:
         leite_po_g = farinha_g * self.leite_po
         ovos_g = farinha_g * self.ovos
 
+        # Consideramos um ovo médio sem casca com aprox. 50g
+        unidades_ovos_aprox = (ovos_g / 50.0) if ovos_g > 0 else 0.0
+        unidades_ovos_inteiras = max(1, round(unidades_ovos_aprox)) if ovos_g > 0 else 0
+
         temp_alvo = 25.0
         fator_friccao = 5.0
         temp_agua = (temp_alvo * 3.0) - (self.temp_ambiente * 2.0) - fator_friccao
@@ -96,36 +97,27 @@ class CalculadoraPanificacao:
             qtd_unidades = 1
             sobra_massa_g = 0.0
 
-        # Cálculo financeiro de custos da fornada
-        custo_farinha_total = (farinha_g / 1000.0) * self.c_farinha
-        custo_agua_total = (agua_ml / 1000.0) * self.c_agua
-        custo_sal_total = (sal_g / 1000.0) * self.c_sal
-        custo_fermento_total = (fermento_g / 1000.0) * self.c_fermento
-        custo_acucar_total = (acucar_g / 1000.0) * self.c_acucar
-        custo_gordura_total = (gordura_g / 1000.0) * self.c_gordura
-        custo_leite_po_total = (leite_po_g / 1000.0) * self.c_leite_po
-        custo_ovos_total = (ovos_g / 1000.0) * self.c_ovos
+        # Custos
+        custo_farinha = (farinha_g / 1000.0) * self.c_farinha
+        custo_sal = (sal_g / 1000.0) * self.c_sal
+        custo_fermento = (fermento_g / 1000.0) * self.c_fermento
+        custo_acucar = (acucar_g / 1000.0) * self.c_acucar
+        custo_gordura = (gordura_g / 1000.0) * self.c_gordura
+        custo_leite_po = (leite_po_g / 1000.0) * self.c_leite_po
+        custo_ovos = unidades_ovos_inteiras * self.c_ovo_unidade
 
         custo_total_fornada = (
-            custo_farinha_total
-            + custo_agua_total
-            + custo_sal_total
-            + custo_fermento_total
-            + custo_acucar_total
-            + custo_gordura_total
-            + custo_leite_po_total
-            + custo_ovos_total
+            custo_farinha + custo_sal + custo_fermento + 
+            custo_acucar + custo_gordura + custo_leite_po + custo_ovos
         )
 
         unidades_efetivas = qtd_unidades if qtd_unidades > 0 else 1
         custo_por_unidade = custo_total_fornada / unidades_efetivas
         preco_sugerido_unidade = custo_por_unidade * (1.0 + self.margem_lucro)
 
-        massa_enriquecida = any(
-            x > 0 for x in [self.acucar, self.gordura, self.leite_po, self.ovos]
-        )
+        massa_enriquecida = any(x > 0 for x in [self.acucar, self.gordura, self.leite_po, self.ovos])
 
-        resultado = {
+        return {
             "peso_total_g": round(self.peso_total, 1),
             "farinha_g": round(farinha_g, 1),
             "agua_ml": round(agua_ml, 1),
@@ -149,15 +141,10 @@ class CalculadoraPanificacao:
             "leite_po_pct": round(self.leite_po * 100, 1),
             "ovos_g": round(ovos_g, 1),
             "ovos_pct": round(self.ovos * 100, 1),
-            "unidades_ovos_aprox": round(ovos_g / 50.0, 1) if ovos_g > 0 else 0.0,
-            # Métricas Financeiras
+            "unidades_ovos_inteiras": unidades_ovos_inteiras,
             "custo_total_fornada": round(custo_total_fornada, 2),
             "custo_por_unidade": round(custo_por_unidade, 2),
             "preco_sugerido_unidade": round(preco_sugerido_unidade, 2),
-            "margem_lucro_pct": round(self.margem_lucro * 100, 1)
+            "margem_lucro_pct": round(self.margem_lucro * 100, 1),
+            "goma_xantana_g": round(farinha_g * self.goma_xantana_pct, 1) if not self.contem_gluten else 0.0
         }
-
-        if not self.contem_gluten:
-            resultado["goma_xantana_g"] = round(farinha_g * self.goma_xantana_pct, 1)
-
-        return resultado
