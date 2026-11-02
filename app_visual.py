@@ -38,7 +38,7 @@ st.markdown("""
         color: #231F1E !important;
     }
 
-    /* TÍTULO E SUBTÍTULO DO BANNER ESCURO (Estilo Pão da Casa) */
+    /* TÍTULO E SUBTÍTULO DO BANNER ESCURO */
     .banner-container h1 {
         color: #FCEDC9 !important;
         font-family: 'Playfair Display', serif !important;
@@ -47,7 +47,7 @@ st.markdown("""
         color: #D6C7B2 !important;
     }
 
-    /* ABAS (TABS) NO TOPO - Contraste Perfeito */
+    /* ABAS (TABS) NO TOPO */
     button[data-baseweb="tab"] {
         background-color: transparent !important;
     }
@@ -67,7 +67,7 @@ st.markdown("""
         border-bottom-color: #C87D32 !important;
     }
 
-    /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS (Fundo Claro e Legível) */
+    /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS */
     [data-testid="stFileUploader"] section {
         background-color: #FCEDC9 !important;
         border: 2px dashed #C87D32 !important;
@@ -359,7 +359,7 @@ with aba_calc:
             st.success("Ficha calculada com sucesso!")
 
 # ==========================================
-# 6. EXIBIÇÃO DOS RESULTADOS & PDF
+# 6. EXIBIÇÃO DOS RESULTADOS & PDF (CORRIGIDO)
 # ==========================================
 if "resultado_atual" in st.session_state:
     res = st.session_state["resultado_atual"]
@@ -441,8 +441,13 @@ if "resultado_atual" in st.session_state:
         pdf.cell(95, 10, limpar_texto_pdf(f" {ins}"), border=1)
         pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
 
-    saida_pdf = pdf.output(dest="S")
-    bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else FPDF.output(pdf, dest="S").encode("latin-1")
+    # Compatibilidade blindada para a exportação de bytes no fpdf2
+    try:
+        bytes_pdf = pdf.output(dest="S")
+        if isinstance(bytes_pdf, str):
+            bytes_pdf = bytes_pdf.encode("latin-1")
+    except Exception:
+        bytes_pdf = pdf.output()
 
     st.download_button(
         label="📄 Baixar Ficha Técnica em PDF",
