@@ -1,8 +1,7 @@
 class CalculadoraPanificacao:
     """
     Motor central para cálculo de percentagem de padeiro reversa, enriquecimento de massa
-    e divisão de bancada. Recebe o peso final desejado da massa e retorna a gramagem exata
-    de todos os insumos sem alterar o peso total planeado.
+    e divisão de bancada.
     """
     def __init__(
         self,
@@ -28,25 +27,21 @@ class CalculadoraPanificacao:
         self.peso_porcao_g = float(peso_porcao_g)
         self.nome_formato = nome_formato
 
-        # Ingredientes de enriquecimento (em decimal)
         self.acucar = float(acucar_pct) / 100.0
         self.gordura = float(gordura_pct) / 100.0
         self.leite_po = float(leite_po_pct) / 100.0
         self.ovos = float(ovos_pct) / 100.0
 
-        # Regra de negócio do fermento
         if self.tipo_fermento.lower() == "levain":
-            self.fermento_pct = 0.20  # 20% Fermento Natural
+            self.fermento_pct = 0.20
         elif self.tipo_fermento.lower() == "fresco":
-            self.fermento_pct = 0.03  # 3% Fermento Biológico Fresco
+            self.fermento_pct = 0.03
         else:
-            self.fermento_pct = 0.01  # 1% Fermento Biológico Seco
+            self.fermento_pct = 0.01
 
-        # Regra de negócio do Glúten (Agente Ligante Estrutural)
         self.goma_xantana_pct = 0.00 if self.contem_gluten else 0.02
 
     def calcular(self) -> dict:
-        # Soma total dos percentuais (Farinha = 1.0 + Hidratação + Sal + Fermento + Enriquecimentos)
         soma_percentuais = (
             1.0
             + self.hidratacao
@@ -59,26 +54,20 @@ class CalculadoraPanificacao:
             + self.ovos
         )
 
-        # Cálculo reverso da base de farinha
         farinha_g = self.peso_total / soma_percentuais
-
-        # Cálculo dos ingredientes base
         agua_ml = farinha_g * self.hidratacao
         sal_g = farinha_g * self.sal
         fermento_g = farinha_g * self.fermento_pct
 
-        # Cálculo dos ingredientes de enriquecimento
         acucar_g = farinha_g * self.acucar
         gordura_g = farinha_g * self.gordura
         leite_po_g = farinha_g * self.leite_po
         ovos_g = farinha_g * self.ovos
 
-        # Cálculo térmico da água (Base 25°C alvo | Fator fricção amassadeira = 5°C)
         temp_alvo = 25.0
         fator_friccao = 5.0
         temp_agua = (temp_alvo * 3.0) - (self.temp_ambiente * 2.0) - fator_friccao
 
-        # Cálculo de Divisão de Porções / Boleamento
         if self.peso_porcao_g > 0:
             qtd_unidades = int(self.peso_total // self.peso_porcao_g)
             sobra_massa_g = round(self.peso_total % self.peso_porcao_g, 1)
@@ -121,17 +110,3 @@ class CalculadoraPanificacao:
             resultado["goma_xantana_g"] = round(farinha_g * self.goma_xantana_pct, 1)
 
         return resultado
-
-
-if __name__ == "__main__":
-    # Teste: 3.500g de massa enriquecida para Pão de Cachorro-Quente (70g)
-    fornada = CalculadoraPanificacao(
-        peso_total_massa=3500,
-        hidratacao_pct=60.0,
-        peso_porcao_g=70,
-        nome_formato="Pão de Cachorro-Quente",
-        acucar_pct=6.0,
-        gordura_pct=5.0,
-        leite_po_pct=3.0
-    )
-    print("Ficha Técnica Calculada:", fornada.calcular())
