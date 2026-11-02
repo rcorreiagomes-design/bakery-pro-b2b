@@ -1,59 +1,137 @@
 class CalculadoraPanificacao:
     """
-    Motor central para cálculo de porcentagem do padeiro reverso.
-    Recebe o peso final desejado da massa e retorna a gramatura exata dos insumos.
+    Motor central para cálculo de percentagem de padeiro reversa, enriquecimento de massa
+    e divisão de bancada. Recebe o peso final desejado da massa e retorna a gramagem exata
+    de todos os insumos sem alterar o peso total planeado.
     """
-    def __init__(self, peso_total_massa, hidratacao_pct, sal_pct=2.0, fermento_seco_pct=1.0):
-        # Recebe os valores do usuário (ex: 3500g, 65%)
-        self.peso_total = peso_total_massa
-        
-        # Converte as porcentagens para decimais para o motor matemático (ex: 65 vira 0.65)
-        self.hidratacao = hidratacao_pct / 100
-        self.sal = sal_pct / 100
-        self.fermento_seco = fermento_seco_pct / 100
+    def __init__(
+        self,
+        peso_total_massa: float,
+        hidratacao_pct: float,
+        sal_pct: float = 2.0,
+        tipo_fermento: str = "Seco",
+        temp_ambiente: float = 25.0,
+        contem_gluten: bool = True,
+        peso_porcao_g: float = 0.0,
+        nome_formato: str = "Massa Única",
+        acucar_pct: float = 0.0,
+        gordura_pct: float = 0.0,
+        leite_po_pct: float = 0.0,
+        ovos_pct: float = 0.0
+    ):
+        self.peso_total = float(peso_total_massa)
+        self.hidratacao = float(hidratacao_pct) / 100.0
+        self.sal = float(sal_pct) / 100.0
+        self.tipo_fermento = tipo_fermento.strip().capitalize()
+        self.temp_ambiente = float(temp_ambiente)
+        self.contem_gluten = bool(contem_gluten)
+        self.peso_porcao_g = float(peso_porcao_g)
+        self.nome_formato = nome_formato
 
-    def calcular_receita(self):
-        # A farinha é sempre a base 100% (1.0)
-        soma_percentuais = 1.0 + self.hidratacao + self.sal + self.fermento_seco
-        
+        # Ingredientes de enriquecimento (em decimal)
+        self.acucar = float(acucar_pct) / 100.0
+        self.gordura = float(gordura_pct) / 100.0
+        self.leite_po = float(leite_po_pct) / 100.0
+        self.ovos = float(ovos_pct) / 100.0
+
+        # Regra de negócio do fermento
+        if self.tipo_fermento.lower() == "levain":
+            self.fermento_pct = 0.20  # 20% Fermento Natural
+        elif self.tipo_fermento.lower() == "fresco":
+            self.fermento_pct = 0.03  # 3% Fermento Biológico Fresco
+        else:
+            self.fermento_pct = 0.01  # 1% Fermento Biológico Seco
+
+        # Regra de negócio do Glúten (Agente Ligante Estrutural)
+        self.goma_xantana_pct = 0.00 if self.contem_gluten else 0.02
+
+    def calcular(self) -> dict:
+        # Soma total dos percentuais (Farinha = 1.0 + Hidratação + Sal + Fermento + Enriquecimentos)
+        soma_percentuais = (
+            1.0
+            + self.hidratacao
+            + self.sal
+            + self.fermento_pct
+            + self.goma_xantana_pct
+            + self.acucar
+            + self.gordura
+            + self.leite_po
+            + self.ovos
+        )
+
         # Cálculo reverso da base de farinha
         farinha_g = self.peso_total / soma_percentuais
-        
-        # Proporções dos demais ingredientes
-        agua_ml = farinha_g * self.hidratacao # ml = g na conversão de água
+
+        # Cálculo dos ingredientes base
+        agua_ml = farinha_g * self.hidratacao
         sal_g = farinha_g * self.sal
-        fermento_seco_g = farinha_g * self.fermento_seco
-        
-        # Regra universal: Fermento fresco é 3x o volume do fermento seco
-        fermento_fresco_g = fermento_seco_g * 3
-        
-        return {
-            "Farinha_g": round(farinha_g, 1),
-            "Agua_ml": round(agua_ml, 1),
-            "Sal_g": round(sal_g, 1),
-            "Fermento_Seco_g": round(fermento_seco_g, 1),
-            "Fermento_Fresco_g": round(fermento_fresco_g, 1)
+        fermento_g = farinha_g * self.fermento_pct
+
+        # Cálculo dos ingredientes de enriquecimento
+        acucar_g = farinha_g * self.acucar
+        gordura_g = farinha_g * self.gordura
+        leite_po_g = farinha_g * self.leite_po
+        ovos_g = farinha_g * self.ovos
+
+        # Cálculo térmico da água (Base 25°C alvo | Fator fricção amassadeira = 5°C)
+        temp_alvo = 25.0
+        fator_friccao = 5.0
+        temp_agua = (temp_alvo * 3.0) - (self.temp_ambiente * 2.0) - fator_friccao
+
+        # Cálculo de Divisão de Porções / Boleamento
+        if self.peso_porcao_g > 0:
+            qtd_unidades = int(self.peso_total // self.peso_porcao_g)
+            sobra_massa_g = round(self.peso_total % self.peso_porcao_g, 1)
+        else:
+            qtd_unidades = 1
+            sobra_massa_g = 0.0
+
+        massa_enriquecida = any(
+            x > 0 for x in [self.acucar, self.gordura, self.leite_po, self.ovos]
+        )
+
+        resultado = {
+            "peso_total_g": round(self.peso_total, 1),
+            "farinha_g": round(farinha_g, 1),
+            "agua_ml": round(agua_ml, 1),
+            "sal_g": round(sal_g, 1),
+            "fermento_g": round(fermento_g, 1),
+            "fermento_fresco_equivalente_g": round(farinha_g * 0.03, 1),
+            "tipo_fermento": self.tipo_fermento,
+            "temp_agua_c": round(temp_agua, 1),
+            "contem_gluten": self.contem_gluten,
+            "hidratacao_pct": round(self.hidratacao * 100, 1),
+            "nome_formato": self.nome_formato,
+            "peso_porcao_g": round(self.peso_porcao_g, 1) if self.peso_porcao_g > 0 else round(self.peso_total, 1),
+            "qtd_unidades": qtd_unidades,
+            "sobra_massa_g": sobra_massa_g,
+            "massa_enriquecida": massa_enriquecida,
+            "acucar_g": round(acucar_g, 1),
+            "acucar_pct": round(self.acucar * 100, 1),
+            "gordura_g": round(gordura_g, 1),
+            "gordura_pct": round(self.gordura * 100, 1),
+            "leite_po_g": round(leite_po_g, 1),
+            "leite_po_pct": round(self.leite_po * 100, 1),
+            "ovos_g": round(ovos_g, 1),
+            "ovos_pct": round(self.ovos * 100, 1),
+            "unidades_ovos_aprox": round(ovos_g / 50.0, 1) if ovos_g > 0 else 0.0
         }
 
-# ==========================================
-# ÁREA DE TESTE (Rode no seu terminal)
-# ==========================================
+        if not self.contem_gluten:
+            resultado["goma_xantana_g"] = round(farinha_g * self.goma_xantana_pct, 1)
+
+        return resultado
+
+
 if __name__ == "__main__":
-    print("--- INICIANDO MOTOR DE CÁLCULO ---")
-    
-    # Simulando a fornada de 3,5 kg com a Venturelli (65% de hidratação)
-    minha_fornada = CalculadoraPanificacao(
-        peso_total_massa=3500, 
-        hidratacao_pct=65.0, 
-        sal_pct=2.0, 
-        fermento_seco_pct=1.0
+    # Teste: 3.500g de massa enriquecida para Pão de Cachorro-Quente (70g)
+    fornada = CalculadoraPanificacao(
+        peso_total_massa=3500,
+        hidratacao_pct=60.0,
+        peso_porcao_g=70,
+        nome_formato="Pão de Cachorro-Quente",
+        acucar_pct=6.0,
+        gordura_pct=5.0,
+        leite_po_pct=3.0
     )
-    
-    ficha_tecnica = minha_fornada.calcular_receita()
-    
-    print(f"\nReceita para {minha_fornada.peso_total}g de massa total:")
-    for ingrediente, quantidade in ficha_tecnica.items():
-        # Formatação simples para o console ficar amigável
-        unidade = "ml" if "ml" in ingrediente else "g"
-        nome_limpo = ingrediente.replace("_ml", "").replace("_g", "").replace("_", " ")
-        print(f"> {nome_limpo}: {quantidade} {unidade}")
+    print("Ficha Técnica Calculada:", fornada.calcular())
