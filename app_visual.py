@@ -424,13 +424,44 @@ if "resultado_atual" in st.session_state:
         ("Farinha Base", f"{receita.get('farinha_g')} g"),
         ("Água Filtrada", f"{receita.get('agua_ml')} ml (a {receita.get('temp_agua_c')}C)"),
         ("Sal", f"{receita.get('sal_g')} g"),
-        (f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g"),
+        (f"Fermento ({receita.get('tipo_fermento')})", f"{receita.get('fermento_g')} g")
     ]
-    if receita.get("acucar_g", 0) > 0: linhas.append(("Açúcar", f"{receita.get('acucar_g')} g"))
-    if receita.get("gordura_g", 0) > 0: linhas.append(("Manteiga / Gordura", f"{receita.get('gordura_g')} g"))
-    if receita.get('leite_po_g', 0) > 0: linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
-    if receita.get("ovos_g", 0) > 0: linhas.append(("Ovos", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)"))
+    if receita.get("acucar_g", 0) > 0:
+        linhas.append(("Açúcar", f"{receita.get('acucar_g')} g"))
+    if receita.get("gordura_g", 0) > 0:
+        linhas.append(("Manteiga / Gordura", f"{receita.get('gordura_g')} g"))
+    if receita.get('leite_po_g', 0) > 0:
+        linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
+    if receita.get("ovos_g", 0) > 0:
+        linhas.append(("Ovos", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)"))
     if not contem_gluten and "goma_xantana_g" in receita:
         linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
 
-    for ins,
+    for ins, qtd in linhas:
+        pdf.cell(95, 10, limpar_texto_pdf(f" {ins}"), border=1)
+        pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
+
+    saida_pdf = pdf.output(dest="S")
+    bytes_pdf = saida_pdf.encode("latin-1") if isinstance(saida_pdf, str) else FPDF.output(pdf, dest="S").encode("latin-1")
+
+    st.download_button(
+        label="📄 Baixar Ficha Técnica em PDF",
+        data=bytes_pdf,
+        file_name=f"ficha_tecnica_{nome_formato_limpo}_{peso_total_int}g.pdf",
+        mime="application/pdf"
+    )
+
+with aba_b2b:
+    st.subheader("📊 Telemetria B2B")
+    if db is None:
+        st.info("Firebase não configurado.")
+    else:
+        try:
+            docs = db.collection("scans_farinha").stream()
+            lista = [d.to_dict() for d in docs]
+            if lista:
+                st.dataframe(pd.DataFrame(lista), use_container_width=True)
+            else:
+                st.info("Nenhum registo na base de dados.")
+        except Exception as e:
+            st.error(f"Erro: {e}")
