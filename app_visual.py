@@ -53,19 +53,22 @@ st.markdown("""
 
     /* CORREÇÃO DEFINITIVA DAS ABAS (TABS) NO TOPO */
     button[data-baseweb="tab"] {
+        background-color: transparent !important;
+    }
+    button[data-baseweb="tab"] p, 
+    button[data-baseweb="tab"] div, 
+    button[data-baseweb="tab"] span {
         color: #4A3B32 !important;
         font-weight: 600 !important;
         font-size: 1.05rem !important;
     }
-    button[data-baseweb="tab"] * {
-        color: #4A3B32 !important;
+    button[data-baseweb="tab"][aria-selected="true"] p, 
+    button[data-baseweb="tab"][aria-selected="true"] div, 
+    button[data-baseweb="tab"][aria-selected="true"] span {
+        color: #C87D32 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
-        color: #C87D32 !important;
         border-bottom-color: #C87D32 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] * {
-        color: #C87D32 !important;
     }
 
     /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS */
@@ -241,4 +244,140 @@ with st.sidebar:
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
 
     if peso_padrao == 0:
-        peso_porcao_g = st.number_input("Peso por unidade (g)", 20, 30
+        peso_porcao_g = st.number_input("Peso por unidade (g)", min_value=20, max_value=3000, value=100, step=5)
+        nome_formato = "Porção Personalizada"
+    elif peso_padrao == -1:
+        peso_porcao_g = 0
+        nome_formato = "Peça Única"
+    else:
+        peso_porcao_g = peso_padrao
+        nome_formato = formato_escolhido.split(" (")[0]
+
+    if modo_planeamento == "Pelo Peso Total da Massa (g)":
+        peso_desejado = st.slider("Peso Total (g)", 500, 15000, 3500, 100)
+    else:
+        if peso_porcao_g <= 0: peso_porcao_g = 70
+        qtd_encomenda = st.number_input("Quantidade de Pães", min_value=1, max_value=500, value=50, step=1)
+        peso_desejado = int(qtd_encomenda * peso_porcao_g)
+        st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
+
+    st.markdown("---")
+    tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
+    fermento_limpo = tipo_fermento.split(" ")[0]
+    sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
+    temp_ambiente = st.number_input("Temp. Ambiente (°C)", min_value=10.0, max_value=40.0, value=24.0, step=0.5)
+
+# ==========================================
+# 5. ABAS CENTRAIS
+# ==========================================
+aba_calc, aba_extras, aba_custos, aba_b2b = st.tabs([
+    "🚀 Calculadora & IA", 
+    "🧈 Enriquecimento da Massa", 
+    "💰 Custos & Precificação", 
+    "📊 Telemetria B2B"
+])
+
+with aba_extras:
+    st.subheader("Ingredientes de Enriquecimento (Percentagem sobre a Farinha)")
+    perfil = st.selectbox("Perfil Rápido", ["Cachorro-Quente / Forma (Macio)", "Hambúrguer / Brioche (Rico)", "Pão Rústico (0%)", "Personalizado"])
+    
+    if "Cachorro" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 6.0, 5.0, 3.0, 0.0
+    elif "Hambúrguer" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 10.0, 15.0, 4.0, 10.0
+    elif "Rústico" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 0.0, 0.0, 0.0, 0.0
+    else:
+        def_acucar, def_gord, def_leite, def_ovos = 5.0, 5.0, 2.0, 0.0
+
+    c1, c2 = st.columns(2)
+    with c1:
+        acucar_pct = st.slider("Açúcar (%)", 0.0, 25.0, def_acucar, 0.5)
+        gordura_pct = st.slider("Manteiga / Óleo (%)", 0.0, 30.0, def_gord, 0.5)
+    with c2:
+        leite_po_pct = st.slider("Leite em Pó (%)", 0.0, 15.0, def_leite, 0.5)
+        ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
+
+with aba_custos:
+    st.subheader("Tabela de Custos dos Insumos & Margem Comercial")
+    cc1, cc2 = st.columns(2)
+    with cc1:
+        c_farinha = st.number_input("Farinha (R$/kg)", min_value=2.0, max_value=20.0, value=5.50, step=0.5)
+        c_fermento = st.number_input("Fermento (R$/kg)", min_value=10.0, max_value=100.0, value=35.0, step=1.0)
+        c_acucar = st.number_input("Açúcar (R$/kg)", min_value=2.0, max_value=15.0, value=4.50, step=0.5)
+        c_sal = st.number_input("Sal (R$/kg)", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
+    with cc2:
+        c_gordura = st.number_input("Manteiga / Gordura (R$/kg)", min_value=5.0, max_value=60.0, value=18.0, step=1.0)
+        c_leite = st.number_input("Leite em Pó (R$/kg)", min_value=10.0, max_value=80.0, value=30.0, step=1.0)
+        c_ovo_unidade = st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=0.75, step=0.05)
+        margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
+
+with aba_calc:
+    col_up, col_prev = st.columns([2, 1])
+    with col_up:
+        st.subheader("Scanner de Rótulo & Simulação Manual")
+        foto_upload = st.file_uploader("Enviar foto da tabela nutricional da farinha (Opcional)", type=["jpg", "jpeg", "png"])
+        b_acao = st.button("✨ Calcular Ficha de Produção Completa")
+
+    if foto_upload is not None:
+        img = Image.open(foto_upload)
+        with col_prev:
+            st.image(img, caption="Rótulo", use_container_width=True)
+
+    if b_acao:
+        with st.spinner("Processando cálculo matemático e inteligência..."):
+            dados_ia = {"marca": "Farinha Padrão / Manual", "proteina_g_por_50g": 6.0, "forca_estimada": "Alta", "hidratacao_minima": 60, "contem_gluten": True}
+            
+            if foto_upload is not None:
+                if not chave_api:
+                    st.error("⚠️ Chave API Gemini não configurada nas Secrets do Streamlit.")
+                else:
+                    res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
+                    if "erro" not in res_ia:
+                        dados_ia = res_ia
+
+            calc = CalculadoraPanificacao(
+                peso_total_massa=peso_desejado,
+                hidratacao_pct=dados_ia.get("hidratacao_minima", 60),
+                sal_pct=sal_pct,
+                tipo_fermento=fermento_limpo,
+                temp_ambiente=temp_ambiente,
+                contem_gluten=dados_ia.get("contem_gluten", True),
+                peso_porcao_g=peso_porcao_g,
+                nome_formato=nome_formato,
+                acucar_pct=acucar_pct,
+                gordura_pct=gordura_pct,
+                leite_po_pct=leite_po_pct,
+                ovos_pct=ovos_pct,
+                custo_farinha_kg=c_farinha,
+                custo_fermento_kg=c_fermento,
+                custo_acucar_kg=c_acucar,
+                custo_gordura_kg=c_gordura,
+                custo_leite_po_kg=c_leite,
+                custo_ovo_unidade=c_ovo_unidade,
+                custo_sal_kg=c_sal,
+                margem_lucro_pct=margem_lucro
+            )
+            st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
+            st.success("Ficha calculada com sucesso!")
+
+# ==========================================
+# 6. EXIBIÇÃO DOS RESULTADOS & PDF
+# ==========================================
+if "resultado_atual" in st.session_state:
+    res = st.session_state["resultado_atual"]
+    dados_ia = res["dados_ia"]
+    receita = res["receita"]
+    contem_gluten = dados_ia.get("contem_gluten", True)
+
+    st.markdown("---")
+    if not contem_gluten:
+        st.warning("⚠️ **PROTOCOLO SEM GLÚTEN:** Adicionado 2% de Goma Xantana.")
+
+    st.subheader(f"📋 Ficha Técnica — {dados_ia.get('marca')} ({receita.get('peso_total_g')}g de Massa)")
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("🌾 Farinha Base", f"{receita.get('farinha_g')} g")
+    m2.metric("💧 Água", f"{receita.get('agua_ml')} ml", f"Ideal: {receita.get('temp_agua_c')} °C")
+    m3.metric("🧂 Sal", f"{receita.get('sal_g')} g")
+    m4.
