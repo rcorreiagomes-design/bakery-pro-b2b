@@ -15,7 +15,7 @@ from firebase_admin import credentials, firestore
 from motor_calculadora import CalculadoraPanificacao
 
 # ==========================================
-# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA
+# 1. CONFIGURAÇÃO DA PÁGINA & ESTÉTICA (CSS CORRIGIDO)
 # ==========================================
 st.set_page_config(
     page_title="Massa Tradicional | Panificação Artesanal & B2B",
@@ -33,10 +33,15 @@ st.markdown("""
         color: #2B2118;
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
+    h1, h2, h3, h4, p, span, label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
     h1, h2, h3, h4 {
         font-family: 'Playfair Display', serif !important;
         color: #231F1E !important;
     }
+
+    /* BARRA LATERAL - Cores corrigidas para total legibilidade */
     section[data-testid="stSidebar"] {
         background-color: #231F1E !important;
         border-right: 2px solid #C87D32;
@@ -44,10 +49,18 @@ st.markdown("""
     section[data-testid="stSidebar"] * {
         color: #F5EFE6 !important;
     }
+    /* Força inputs, selects e caixas de texto da barra lateral a terem texto branco visível */
     section[data-testid="stSidebar"] input, 
-    section[data-testid="stSidebar"] select {
-        color: #231F1E !important;
+    section[data-testid="stSidebar"] select,
+    section[data-testid="stSidebar"] div[data-baseweb="select"] * {
+        color: #FFFFFF !important;
+        background-color: #362C28 !important;
     }
+    section[data-testid="stSidebar"] [data-baseweb="tag"] * {
+        color: #FFFFFF !important;
+    }
+
+    /* Cartões e Métricas */
     [data-testid="stMetric"] {
         background-color: #FFFFFF !important;
         border: 1px solid #E6D7C3 !important;
@@ -55,16 +68,27 @@ st.markdown("""
         border-radius: 10px !important;
         padding: 16px !important;
     }
+    [data-testid="stMetricLabel"] * {
+        color: #7A634E !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stMetricValue"] * {
+        color: #231F1E !important;
+        font-weight: 700 !important;
+    }
+
     .stButton > button {
         background: linear-gradient(135deg, #C87D32 0%, #8C4A27 100%) !important;
         color: #FFFFFF !important;
         font-weight: 600 !important;
         border-radius: 8px !important;
+        border: none !important;
     }
     [data-testid="stDownloadButton"] button {
         background-color: #2E5A44 !important;
         color: #FFFFFF !important;
         border-radius: 8px !important;
+        border: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -132,7 +156,7 @@ def limpar_texto_pdf(texto: str) -> str:
 logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 
 # ==========================================
-# 4. CABEÇALHO & BARRA LATERAL (Enxuta)
+# 4. CABEÇALHO & BARRA LATERAL
 # ==========================================
 if logo_b64:
     st.markdown(f"""
@@ -195,7 +219,7 @@ with st.sidebar:
     chave_api = st.text_input("Chave API Gemini", value=chave_padrao, type="password")
 
 # ==========================================
-# 5. ABAS CENTRAIS (Enriquecimento e Custos Organizados)
+# 5. ABAS CENTRAIS
 # ==========================================
 aba_calc, aba_extras, aba_custos, aba_b2b = st.tabs([
     "🚀 Calculadora & IA", 
@@ -244,7 +268,6 @@ with aba_calc:
     with col_up:
         st.subheader("Scanner de Rótulo & Simulação Manual")
         foto_upload = st.file_uploader("Enviar foto da tabela nutricional da farinha (Opcional)", type=["jpg", "jpeg", "png"])
-        
         b_acao = st.button("✨ Calcular Ficha de Produção Completa")
 
     if foto_upload is not None:
@@ -325,7 +348,6 @@ if "resultado_atual" in st.session_state:
     f2.metric("🏷️ Custo / Unidade", f"R$ {receita.get('custo_por_unidade'):.2f}")
     f3.metric("💡 Preço Sugerido", f"R$ {receita.get('preco_sugerido_unidade'):.2f}", f"Margem: {receita.get('margem_lucro_pct')}%")
 
-    # Geração de PDF
     pdf = FPDF()
     pdf.add_page()
     if caminho_logo:
