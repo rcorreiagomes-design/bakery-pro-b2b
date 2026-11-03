@@ -38,6 +38,12 @@ st.markdown("""
         color: #231F1E !important;
     }
 
+    /* FORÇA TEXTOS DO CORPO PRINCIPAL A SEREM ESCUROS E LEGÍVEIS */
+    .stMainBlockContainer p, .stMainBlockContainer span, .stMainBlockContainer label, 
+    .stMainBlockContainer div, .stMarkdown, .stRadio label, .stSelectbox label, .stSlider label {
+        color: #2B2118 !important;
+    }
+
     /* TÍTULO E SUBTÍTULO DO BANNER ESCURO */
     .banner-container h1 {
         color: #FCEDC9 !important;
@@ -47,30 +53,25 @@ st.markdown("""
         color: #D6C7B2 !important;
     }
 
-    /* ABAS (TABS) NO TOPO - Contraste forte e visível para todas as abas */
-    button[data-baseweb="tab"] {
+    /* ABAS (TABS) NO TOPO - Visibilidade Total e Contraste Perfeito */
+    [data-baseweb="tab-list"] button {
         background-color: transparent !important;
     }
-    button[data-baseweb="tab"] p, 
-    button[data-baseweb="tab"] div, 
-    button[data-baseweb="tab"] span {
-        color: #2B2118 !important;
+    [data-baseweb="tab-list"] button div, 
+    [data-baseweb="tab-list"] button p, 
+    [data-baseweb="tab-list"] button span {
+        color: #231F1E !important;
         font-weight: 700 !important;
         font-size: 1.05rem !important;
         opacity: 1 !important;
     }
-    button[data-baseweb="tab"][aria-selected="true"] p, 
-    button[data-baseweb="tab"][aria-selected="true"] div, 
-    button[data-baseweb="tab"][aria-selected="true"] span {
+    [data-baseweb="tab-list"] button[aria-selected="true"] div, 
+    [data-baseweb="tab-list"] button[aria-selected="true"] p, 
+    [data-baseweb="tab-list"] button[aria-selected="true"] span {
         color: #C87D32 !important;
     }
-    button[data-baseweb="tab"][aria-selected="true"] {
+    [data-baseweb="tab-list"] button[aria-selected="true"] {
         border-bottom-color: #C87D32 !important;
-    }
-
-    /* TEXTOS E RÓTULOS NO CORPO PRINCIPAL (Garante legibilidade total) */
-    .stMarkdown p, .stRadio label, .stSelectbox label, .stSlider label, div[data-baseweb="select"] span {
-        color: #2B2118 !important;
     }
 
     /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS */
