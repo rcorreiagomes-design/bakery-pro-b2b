@@ -187,12 +187,13 @@ if logo_b64:
 else:
     logo_html = '🌾'
 
+# Título ajustado com estilo inline direto para garantir visibilidade absoluta
 st.markdown(f"""
     <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
         <div style="width: 80px; height: 80px; flex-shrink: 0;">{logo_html}</div>
         <div>
-            <h1 style="margin: 0; font-size: 1.9rem; color: #FCEDC9 !important; font-family: 'Playfair Display', serif !important;">Massa Tradicional</h1>
-            <p style="color: #D6C7B2 !important; font-size: 0.92rem; margin: 2px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
+            <h1 style="color: #FCEDC9 !important; font-family: 'Playfair Display', serif !important; font-size: 2.1rem !important; margin: 0 !important; padding: 0 !important; line-height: 1.2 !important;">Massa Tradicional</h1>
+            <p style="color: #D6C7B2 !important; font-size: 0.95rem !important; margin: 4px 0 0 0 !important;">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
 """, unsafe_allow_html=True)
