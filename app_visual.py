@@ -246,4 +246,31 @@ st.markdown(f"""
 FORMATOS_PADARIA = {
     "Pão de Cachorro-Quente (70g)": 70,
     "Pão de Hambúrguer / Brioche (90g)": 90,
-    "Pão Francês / Mini Baguete (120g)":
+    "Pão Francês / Mini Baguete (120g)": 120,
+    "Focaccia Individual (250g)": 250,
+    "Pão de Forma Tradicional (550g)": 550,
+    "Pão de Forma Grande (650g)": 650,
+    "Pão Rústico / Campagne (800g)": 800,
+    "Personalizado (Definir gramas)": 0,
+    "Peça Única (Sem divisão)": -1
+}
+
+with st.sidebar:
+    if logo_b64:
+        st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
+
+    st.markdown("### 🥖 Planejamento")
+    st.caption("Configure os parâmetros base:")
+    
+    modo_planeamento = st.radio("Modo de Cálculo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães", "Por Farinha Disponível (Estoque)"])
+    
+    formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
+    peso_padrao = FORMATOS_PADARIA[formato_escolhido]
+
+    if peso_padrao == 0:
+        peso_porcao_g = st.number_input("Peso por unidade (g)", min_value=20, max_value=3000, value=100, step=5)
+        nome_formato = "Porção Personalizada"
+    elif peso_padrao == -1:
+        peso_porcao_g = 0
+        nome_formato = "Peça Única"
+    else:
