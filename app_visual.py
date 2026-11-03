@@ -43,42 +43,6 @@ st.markdown("""
         color: #2B2118 !important;
     }
 
-    /* TÍTULO GARANTIDO NO BANNER ESCURO */
-    .banner-titulo-personalizado {
-        color: #FCEDC9 !important;
-        font-family: 'Playfair Display', serif !important;
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    .banner-sub-personalizado {
-        color: #D6C7B2 !important;
-        font-size: 0.95rem !important;
-        margin: 4px 0 0 0 !important;
-    }
-
-    /* ABAS NO TOPO */
-    button[data-baseweb="tab"] {
-        background-color: transparent !important;
-    }
-    button[data-baseweb="tab"] div, 
-    button[data-baseweb="tab"] p, 
-    button[data-baseweb="tab"] span {
-        color: #231F1E !important;
-        font-weight: 700 !important;
-        font-size: 1.05rem !important;
-        opacity: 1 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] div, 
-    button[data-baseweb="tab"][aria-selected="true"] p, 
-    button[data-baseweb="tab"][aria-selected="true"] span {
-        color: #C87D32 !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        border-bottom-color: #C87D32 !important;
-    }
-
     /* UPLOAD */
     [data-testid="stFileUploader"] section {
         background-color: #FCEDC9 !important;
@@ -118,16 +82,6 @@ st.markdown("""
     section[data-testid="stSidebar"] hr {
         margin: 0.6rem 0 !important;
         border-color: #C87D32 !important;
-    }
-
-    /* CARTÕES DE GUIA RÁPIDO */
-    .guia-passo {
-        background-color: #F4ECE1;
-        border-left: 4px solid #C87D32;
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 16px;
-        font-size: 0.95rem;
     }
 
     [data-testid="stMetric"] {
@@ -237,8 +191,8 @@ st.markdown(f"""
     <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
         <div style="width: 80px; height: 80px; flex-shrink: 0;">{logo_html}</div>
         <div>
-            <h1 class="banner-titulo-personalizado">Massa Tradicional</h1>
-            <p class="banner-sub-personalizado">Painel Profissional de Panificação & B2B Intelligence</p>
+            <h1 style="margin: 0; font-size: 1.9rem; color: #FCEDC9 !important; font-family: 'Playfair Display', serif !important;">Massa Tradicional</h1>
+            <p style="color: #D6C7B2 !important; font-size: 0.92rem; margin: 2px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -306,65 +260,13 @@ aba_calc, aba_extras, aba_custos, aba_b2b = st.tabs([
     "📊 Telemetria B2B"
 ])
 
-with aba_extras:
-    st.markdown("""
-        <div class="guia-passo">
-            <b>🧈 Para que serve esta aba?</b><br>
-            Aqui você define ingredientes opcionais (como açúcar, manteiga, leite em pó e ovos) em <b>percentagem (%) sobre o peso da farinha</b>.<br>
-            • Use os <i>Perfis Rápidos</i> para carregar proporções tradicionais de pães macios ou ricos em gordura instantaneamente.
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.subheader("Ingredientes de Enriquecimento (Percentagem sobre a Farinha)")
-    perfil = st.selectbox("Perfil Rápido", ["Cachorro-Quente / Forma (Macio)", "Hambúrguer / Brioche (Rico)", "Pão Rústico (0%)", "Personalizado"])
-    
-    if "Cachorro" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 6.0, 5.0, 3.0, 0.0
-    elif "Hambúrguer" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 10.0, 15.0, 4.0, 10.0
-    elif "Rústico" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 0.0, 0.0, 0.0, 0.0
-    else:
-        def_acucar, def_gord, def_leite, def_ovos = 5.0, 5.0, 2.0, 0.0
-
-    c1, c2 = st.columns(2)
-    with c1:
-        acucar_pct = st.slider("Açúcar (%)", 0.0, 25.0, def_acucar, 0.5)
-        gordura_pct = st.slider("Manteiga / Óleo (%)", 0.0, 30.0, def_gord, 0.5)
-    with c2:
-        leite_po_pct = st.slider("Leite em Pó (%)", 0.0, 15.0, def_leite, 0.5)
-        ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
-
-with aba_custos:
-    st.markdown("""
-        <div class="guia-passo">
-            <b>💰 Gestão de Custos & Margem Comercial:</b><br>
-            Insira o preço de compra dos insumos por quilo (ou por unidade no caso dos ovos). O sistema calcula automaticamente o <b>custo total da fornada</b>, o <b>custo por unidade produzida</b> e sugere o <b>preço de venda</b> com base na margem de lucro desejada.
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.subheader("Tabela de Custos dos Insumos & Margem Comercial")
-    cc1, cc2 = st.columns(2)
-    with cc1:
-        c_farinha = st.number_input("Farinha (R$/kg)", min_value=2.0, max_value=20.0, value=5.50, step=0.5)
-        c_fermento = st.number_input("Fermento (R$/kg)", min_value=10.0, max_value=100.0, value=35.0, step=1.0)
-        c_acucar = st.number_input("Açúcar (R$/kg)", min_value=2.0, max_value=15.0, value=4.50, step=0.5)
-        c_sal = st.number_input("Sal (R$/kg)", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
-    with cc2:
-        c_gordura = st.number_input("Manteiga / Gordura (R$/kg)", min_value=5.0, max_value=60.0, value=18.0, step=1.0)
-        c_leite = st.number_input("Leite em Pó (R$/kg)", min_value=10.0, max_value=80.0, value=30.0, step=1.0)
-        c_ovo_unidade = st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=0.75, step=0.05)
-        margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
-
 with aba_calc:
-    st.markdown("""
-        <div class="guia-passo">
-            <b>👋 Bem-vindo ao Massa Tradicional! Siga estes passos simples:</b><br>
-            1️⃣ <b>Configure o Planejamento</b> na barra lateral à esquerda (escolha o modo de cálculo, estoque e formato do pão).<br>
-            2️⃣ <b>Opcional:</b> Envie a foto do rótulo da sua farinha abaixo para que a IA analise a força e a hidratação.<br>
-            3️⃣ <b>Clique no botão abaixo</b> para gerar a ficha técnica completa, calcular os custos e exportar o PDF.
-        </div>
-    """, unsafe_allow_html=True)
+    st.info(
+        "👋 **Como usar a Calculadora & IA:**\n\n"
+        "1. **Passo 1:** Na barra lateral à esquerda, configure o **Modo de Cálculo** (seja por peso total, quantidade de pães ou farinha disponível no estoque) e o formato desejado.\n"
+        "2. **Passo 2 (Opcional):** Envie a foto da tabela nutricional da sua farinha no campo abaixo. A IA Gemini irá extrair a proteína e calcular a hidratação ideal automaticamente.\n"
+        "3. **Passo 3:** Clique em **Calcular Ficha de Produção Completa** para visualizar os ingredientes, os custos e baixar o PDF em formato profissional."
+    )
 
     col_up, col_prev = st.columns([2, 1])
     with col_up:
@@ -398,21 +300,68 @@ with aba_calc:
                 contem_gluten=dados_ia.get("contem_gluten", True),
                 peso_porcao_g=peso_porcao_g,
                 nome_formato=nome_formato,
-                acucar_pct=acucar_pct,
-                gordura_pct=gordura_pct,
-                leite_po_pct=leite_po_pct,
-                ovos_pct=ovos_pct,
-                custo_farinha_kg=c_farinha,
-                custo_fermento_kg=c_fermento,
-                custo_acucar_kg=c_acucar,
-                custo_gordura_kg=c_gordura,
-                custo_leite_po_kg=c_leite,
-                custo_ovo_unidade=c_ovo_unidade,
-                custo_sal_kg=c_sal,
-                margem_lucro_pct=margem_lucro
+                acucar_pct=acucar_pct if 'acucar_pct' in locals() else 5.0,
+                gordura_pct=gordura_pct if 'gordura_pct' in locals() else 5.0,
+                leite_po_pct=leite_po_pct if 'leite_po_pct' in locals() else 2.0,
+                ovos_pct=ovos_pct if 'ovos_pct' in locals() else 0.0,
+                custo_farinha_kg=c_farinha if 'c_farinha' in locals() else 5.50,
+                custo_fermento_kg=c_fermento if 'c_fermento' in locals() else 35.0,
+                custo_acucar_kg=c_acucar if 'c_acucar' in locals() else 4.50,
+                custo_gordura_kg=c_gordura if 'c_gordura' in locals() else 18.0,
+                custo_leite_po_kg=c_leite if 'c_leite' in locals() else 30.0,
+                custo_ovo_unidade=c_ovo_unidade if 'c_ovo_unidade' in locals() else 0.75,
+                custo_sal_kg=c_sal if 'c_sal' in locals() else 3.0,
+                margem_lucro_pct=margem_lucro if 'margem_lucro' in locals() else 100.0
             )
             st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
             st.success("Ficha calculada com sucesso!")
+
+with aba_extras:
+    st.info(
+        "🧈 **Para que serve esta aba?**\n\n"
+        "Aqui você define ingredientes complementares (como açúcar, gordura/manteiga, leite em pó e ovos) em **percentagem (%) calculada diretamente sobre o peso da farinha**.\n"
+        "• **Como usar:** Escolha um *Perfil Rápido* para preencher automaticamente as proporções clássicas (ex: pão macio de forma ou brioche rico) ou ajuste os controles deslizantes conforme sua receita autoral."
+    )
+    
+    st.subheader("Ingredientes de Enriquecimento (Percentagem sobre a Farinha)")
+    perfil = st.selectbox("Perfil Rápido", ["Cachorro-Quente / Forma (Macio)", "Hambúrguer / Brioche (Rico)", "Pão Rústico (0%)", "Personalizado"])
+    
+    if "Cachorro" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 6.0, 5.0, 3.0, 0.0
+    elif "Hambúrguer" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 10.0, 15.0, 4.0, 10.0
+    elif "Rústico" in perfil:
+        def_acucar, def_gord, def_leite, def_ovos = 0.0, 0.0, 0.0, 0.0
+    else:
+        def_acucar, def_gord, def_leite, def_ovos = 5.0, 5.0, 2.0, 0.0
+
+    c1, c2 = st.columns(2)
+    with c1:
+        acucar_pct = st.slider("Açúcar (%)", 0.0, 25.0, def_acucar, 0.5)
+        gordura_pct = st.slider("Manteiga / Óleo (%)", 0.0, 30.0, def_gord, 0.5)
+    with c2:
+        leite_po_pct = st.slider("Leite em Pó (%)", 0.0, 15.0, def_leite, 0.5)
+        ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
+
+with aba_custos:
+    st.info(
+        "💰 **Para que serve esta aba?**\n\n"
+        "Insira os custos unitários de compra dos seus ingredientes por quilo (ou por unidade no caso dos ovos).\n"
+        "• **Por que usar:** O sistema cruza esses valores com a receita gerada na calculadora para exibir o **custo total da fornada**, o **custo por pão produzido** e o **preço de venda sugerido** baseado na margem de lucro comercial desejada."
+    )
+    
+    st.subheader("Tabela de Custos dos Insumos & Margem Comercial")
+    cc1, cc2 = st.columns(2)
+    with cc1:
+        c_farinha = st.number_input("Farinha (R$/kg)", min_value=2.0, max_value=20.0, value=5.50, step=0.5)
+        c_fermento = st.number_input("Fermento (R$/kg)", min_value=10.0, max_value=100.0, value=35.0, step=1.0)
+        c_acucar = st.number_input("Açúcar (R$/kg)", min_value=2.0, max_value=15.0, value=4.50, step=0.5)
+        c_sal = st.number_input("Sal (R$/kg)", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
+    with cc2:
+        c_gordura = st.number_input("Manteiga / Gordura (R$/kg)", min_value=5.0, max_value=60.0, value=18.0, step=1.0)
+        c_leite = st.number_input("Leite em Pó (R$/kg)", min_value=10.0, max_value=80.0, value=30.0, step=1.0)
+        c_ovo_unidade = st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=0.75, step=0.05)
+        margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
 
 # ==========================================
 # 6. EXIBIÇÃO DOS RESULTADOS & PDF
@@ -522,12 +471,11 @@ if "resultado_atual" in st.session_state:
         )
 
 with aba_b2b:
-    st.markdown("""
-        <div class="guia-passo">
-            <b>📊 Telemetria & Banco de Dados (Firebase):</b><br>
-            Acompanhe o registo histórico de todas as farinhas escaneadas pela IA e simulações B2B salvas no banco de dados em tempo real.
-        </div>
-    """, unsafe_allow_html=True)
+    st.info(
+        "📊 **Para que serve esta aba?**\n\n"
+        "Esta aba exibe a telemetria e o histórico conectado ao banco de dados do **Firebase**.\n"
+        "• **Por que usar:** Permite acompanhar em tempo real o registo de todas as farinhas escaneadas pela IA e simulações comerciais realizadas."
+    )
     
     if db is None:
         st.info("Firebase não configurado.")
