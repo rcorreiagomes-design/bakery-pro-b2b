@@ -33,44 +33,49 @@ st.markdown("""
         color: #2B2118;
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
+    
+    /* TÍTULOS GERAIS DA PÁGINA */
     h1, h2, h3, h4 {
         font-family: 'Playfair Display', serif !important;
         color: #231F1E !important;
     }
 
-    /* FORÇA TEXTOS DO CORPO PRINCIPAL A SEREM ESCUROS E LEGÍVEIS */
-    .stMainBlockContainer p, .stMainBlockContainer span, .stMainBlockContainer label, 
-    .stMainBlockContainer div, .stMarkdown, .stRadio label, .stSelectbox label, .stSlider label {
+    /* FORÇA LEGIBILIDADE TOTAL EM TEXTOS E RÓTULOS DO CORPO */
+    p, span, label, div[data-baseweb="select"] span, .stMarkdown {
         color: #2B2118 !important;
     }
 
-    /* TÍTULO E SUBTÍTULO DO BANNER ESCURO */
-    .banner-container h1 {
+    /* CORREÇÃO DO TÍTULO E SUBTÍTULO NO BANNER ESCURO */
+    .banner-titulo {
         color: #FCEDC9 !important;
         font-family: 'Playfair Display', serif !important;
+        font-size: 1.9rem !important;
+        margin: 0 !important;
     }
-    .banner-container p {
+    .banner-sub {
         color: #D6C7B2 !important;
+        font-size: 0.92rem !important;
+        margin: 2px 0 0 0 !important;
     }
 
-    /* ABAS (TABS) NO TOPO - Visibilidade Total e Contraste Perfeito */
-    [data-baseweb="tab-list"] button {
+    /* CORREÇÃO DEFINITIVA DAS ABAS (TABS) NO TOPO */
+    button[data-baseweb="tab"] {
         background-color: transparent !important;
     }
-    [data-baseweb="tab-list"] button div, 
-    [data-baseweb="tab-list"] button p, 
-    [data-baseweb="tab-list"] button span {
+    button[data-baseweb="tab"] div, 
+    button[data-baseweb="tab"] p, 
+    button[data-baseweb="tab"] span {
         color: #231F1E !important;
         font-weight: 700 !important;
         font-size: 1.05rem !important;
         opacity: 1 !important;
     }
-    [data-baseweb="tab-list"] button[aria-selected="true"] div, 
-    [data-baseweb="tab-list"] button[aria-selected="true"] p, 
-    [data-baseweb="tab-list"] button[aria-selected="true"] span {
+    button[data-baseweb="tab"][aria-selected="true"] div, 
+    button[data-baseweb="tab"][aria-selected="true"] p, 
+    button[data-baseweb="tab"][aria-selected="true"] span {
         color: #C87D32 !important;
     }
-    [data-baseweb="tab-list"] button[aria-selected="true"] {
+    button[data-baseweb="tab"][aria-selected="true"] {
         border-bottom-color: #C87D32 !important;
     }
 
@@ -216,11 +221,11 @@ chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""
 # ==========================================
 if logo_b64:
     st.markdown(f"""
-    <div class="banner-container" style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
+    <div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">
         <div style="width: 80px; height: 80px; flex-shrink: 0;"><img src="data:image/png;base64,{logo_b64}" style="width: 100%; height: 100%; object-fit: contain;"></div>
         <div>
-            <h1 style="margin: 0; font-size: 1.9rem; color: #FCEDC9 !important;">Massa Tradicional</h1>
-            <p style="color: #D6C7B2 !important; font-size: 0.92rem; margin: 2px 0 0 0;">Painel Profissional de Panificação & B2B Intelligence</p>
+            <h1 class="banner-titulo">Massa Tradicional</h1>
+            <p class="banner-sub">Painel Profissional de Panificação & B2B Intelligence</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -455,44 +460,4 @@ if "resultado_atual" in st.session_state:
             linhas.append(("Leite em Pó", f"{receita.get('leite_po_g')} g"))
         if receita.get("ovos_g", 0) > 0:
             linhas.append(("Ovos", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)"))
-        if not contem_gluten and "goma_xantana_g" in receita:
-            linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
-
-        for ins, qtd in linhas:
-            pdf.cell(95, 10, limpar_texto_pdf(f" {ins}"), border=1)
-            pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
-
-        saida_pdf = pdf.output(dest='S')
-        if isinstance(saida_pdf, str):
-            bytes_pdf = saida_pdf.encode('latin-1', errors='ignore')
-        elif isinstance(saida_pdf, bytearray):
-            bytes_pdf = bytes(saida_pdf)
-        else:
-            bytes_pdf = bytes(saida_pdf)
-
-    except Exception as e:
-        bytes_pdf = b""
-        st.error(f"Erro ao gerar o PDF: {e}")
-
-    if len(bytes_pdf) > 0:
-        st.download_button(
-            label="📄 Baixar Ficha Técnica em PDF",
-            data=bytes_pdf,
-            file_name=f"ficha_tecnica_{nome_formato_limpo}_{peso_total_int}g.pdf",
-            mime="application/pdf"
-        )
-
-with aba_b2b:
-    st.subheader("📊 Telemetria B2B")
-    if db is None:
-        st.info("Firebase não configurado.")
-    else:
-        try:
-            docs = db.collection("scans_farinha").stream()
-            lista = [d.to_dict() for d in docs]
-            if lista:
-                st.dataframe(pd.DataFrame(lista), use_container_width=True)
-            else:
-                st.info("Nenhum registo na base de dados.")
-        except Exception as e:
-            st.error(f"Erro: {e}")
+        if not contem_gluten and "goma_
