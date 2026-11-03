@@ -39,8 +39,59 @@ st.markdown("""
         color: #231F1E !important;
     }
 
-    p, span, label, div[data-baseweb="select"] span, .stMarkdown {
+    /* RÓTULOS E CONTROLOS DO CORPO (Sem afetar o banner) */
+    label, div[data-baseweb="select"] span, .stSlider label, .stNumberInput label {
         color: #2B2118 !important;
+    }
+
+    /* BLINDAGEM EXCLUSIVA DO BANNER SUPERIOR */
+    #banner-topo {
+        background: linear-gradient(135deg, #231F1E 0%, #362C28 100%) !important;
+        padding: 20px 26px !important;
+        border-radius: 12px !important;
+        border-bottom: 4px solid #C87D32 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 20px !important;
+        margin-bottom: 16px !important;
+    }
+    #banner-topo .titulo-principal {
+        color: #FCEDC9 !important;
+        font-family: 'Playfair Display', serif !important;
+        font-size: 2.1rem !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
+        display: block !important;
+    }
+    #banner-topo .subtitulo-principal {
+        color: #D6C7B2 !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.95rem !important;
+        margin: 4px 0 0 0 !important;
+        display: block !important;
+    }
+
+    /* ABAS NO TOPO */
+    button[data-baseweb="tab"] {
+        background-color: transparent !important;
+    }
+    button[data-baseweb="tab"] div, 
+    button[data-baseweb="tab"] p, 
+    button[data-baseweb="tab"] span {
+        color: #231F1E !important;
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        opacity: 1 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] div, 
+    button[data-baseweb="tab"][aria-selected="true"] p, 
+    button[data-baseweb="tab"][aria-selected="true"] span {
+        color: #C87D32 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        border-bottom-color: #C87D32 !important;
     }
 
     /* UPLOAD */
@@ -167,7 +218,8 @@ for nome_arq in ["logo_limpo.png", "logo_clean.png", "logo.png"]:
 def obter_base64_da_imagem(caminho):
     img = Image.open(caminho)
     bbox = img.getbbox()
-    if bbox: img = img.crop(bbox)
+    if bbox:
+        img = img.crop(bbox)
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     return base64.b64encode(buffer.getvalue()).decode()
@@ -188,11 +240,11 @@ else:
     logo_html = '🌾'
 
 st.markdown(
-    '<div style="background: linear-gradient(135deg, #231F1E 0%, #362C28 100%); padding: 20px 26px; border-radius: 12px; border-bottom: 4px solid #C87D32; display: flex; align-items: center; gap: 20px; margin-bottom: 16px;">'
+    '<div id="banner-topo">'
     f'<div style="width: 80px; height: 80px; flex-shrink: 0;">{logo_html}</div>'
     '<div>'
-    '<p style="color: #FCEDC9 !important; font-family: \'Playfair Display\', serif !important; font-size: 2.1rem !important; font-weight: 700 !important; margin: 0 !important; padding: 0 !important; line-height: 1.2 !important;">Massa Tradicional</p>'
-    '<p style="color: #D6C7B2 !important; font-size: 0.95rem !important; margin: 4px 0 0 0 !important;">Painel Profissional de Panificação & B2B Intelligence</p>'
+    '<div class="titulo-principal">Massa Tradicional</div>'
+    '<div class="subtitulo-principal">Painel Profissional de Panificação & B2B Intelligence</div>'
     '</div></div>',
     unsafe_allow_html=True
 )
@@ -210,13 +262,18 @@ FORMATOS_PADARIA = {
 }
 
 with st.sidebar:
-    if logo_b64:
+    if caminho_logo:
         st.image(caminho_logo, width=65)
 
     st.markdown("### 🥖 Planejamento")
     st.caption("Configure os parâmetros base:")
     
-    modo_planeamento = st.radio("Modo de Cálculo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães", "Por Farinha Disponível (Estoque)"])
+    opcoes_modo = [
+        "Pelo Peso Total da Massa (g)",
+        "Pela Quantidade de Pães",
+        "Por Farinha Disponível (Estoque)"
+    ]
+    modo_planeamento = st.radio("Modo de Cálculo:", opcoes_modo)
     
     formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
@@ -260,71 +317,21 @@ aba_calc, aba_extras, aba_custos, aba_b2b = st.tabs([
     "📊 Telemetria B2B"
 ])
 
-with aba_calc:
-    st.info(
-        "👋 **Como usar a Calculadora & IA:**\n\n"
-        "1. **Passo 1:** Na barra lateral à esquerda, configure o **Modo de Cálculo** (seja por peso total, quantidade de pães ou farinha disponível no estoque) e o formato desejado.\n"
-        "2. **Passo 2 (Opcional):** Envie a foto da tabela nutricional da sua farinha no campo abaixo. A IA Gemini irá extrair a proteína e calcular a hidratação ideal automaticamente.\n"
-        "3. **Passo 3:** Clique em **Calcular Ficha de Produção Completa** para visualizar os ingredientes, os custos e baixar o PDF em formato profissional."
-    )
-
-    col_up, col_prev = st.columns([2, 1])
-    with col_up:
-        st.subheader("Scanner de Rótulo & Simulação Manual")
-        foto_upload = st.file_uploader("Enviar foto da tabela nutricional da farinha (Opcional)", type=["jpg", "jpeg", "png"])
-        b_acao = st.button("✨ Calcular Ficha de Produção Completa")
-
-    if foto_upload is not None:
-        img = Image.open(foto_upload)
-        with col_prev:
-            st.image(img, caption="Rótulo", use_container_width=True)
-
-    if b_acao:
-        with st.spinner("Processando cálculo matemático e inteligência..."):
-            dados_ia = {"marca": "Farinha Padrão / Manual", "proteina_g_por_50g": 6.0, "forca_estimada": "Alta", "hidratacao_minima": 60, "contem_gluten": True}
-            
-            if foto_upload is not None:
-                if not chave_api:
-                    st.error("⚠️ Chave API Gemini não configurada nas Secrets do Streamlit.")
-                else:
-                    res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
-                    if "erro" not in res_ia:
-                        dados_ia = res_ia
-
-            calc = CalculadoraPanificacao(
-                peso_total_massa=peso_desejado,
-                hidratacao_pct=dados_ia.get("hidratacao_minima", 60),
-                sal_pct=sal_pct,
-                tipo_fermento=fermento_limpo,
-                temp_ambiente=temp_ambiente,
-                contem_gluten=dados_ia.get("contem_gluten", True),
-                peso_porcao_g=peso_porcao_g,
-                nome_formato=nome_formato,
-                acucar_pct=acucar_pct if 'acucar_pct' in locals() else 5.0,
-                gordura_pct=gordura_pct if 'gordura_pct' in locals() else 5.0,
-                leite_po_pct=leite_po_pct if 'leite_po_pct' in locals() else 2.0,
-                ovos_pct=ovos_pct if 'ovos_pct' in locals() else 0.0,
-                custo_farinha_kg=c_farinha if 'c_farinha' in locals() else 5.50,
-                custo_fermento_kg=c_fermento if 'c_fermento' in locals() else 35.0,
-                custo_acucar_kg=c_acucar if 'c_acucar' in locals() else 4.50,
-                custo_gordura_kg=c_gordura if 'c_gordura' in locals() else 18.0,
-                custo_leite_po_kg=c_leite if 'c_leite' in locals() else 30.0,
-                custo_ovo_unidade=c_ovo_unidade if 'c_ovo_unidade' in locals() else 0.75,
-                custo_sal_kg=c_sal if 'c_sal' in locals() else 3.0,
-                margem_lucro_pct=margem_lucro if 'margem_lucro' in locals() else 100.0
-            )
-            st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
-            st.success("Ficha calculada com sucesso!")
-
 with aba_extras:
     st.info(
         "🧈 **Para que serve esta aba?**\n\n"
         "Aqui você define ingredientes complementares (como açúcar, gordura/manteiga, leite em pó e ovos) em **percentagem (%) calculada diretamente sobre o peso da farinha**.\n"
-        "• **Como usar:** Escolha um *Perfil Rápido* para preencher automaticamente as proporções clássicas (ex: pão macio de forma ou brioche rico) ou ajuste os controles deslizantes conforme sua receita autoral."
+        "• **Como usar:** Escolha um *Perfil Rápido* para preencher automaticamente as proporções clássicas (ex: pão macio de forma ou brioche rico) ou ajuste os controlos deslizantes conforme a sua receita autoral."
     )
     
     st.subheader("Ingredientes de Enriquecimento (Percentagem sobre a Farinha)")
-    perfil = st.selectbox("Perfil Rápido", ["Cachorro-Quente / Forma (Macio)", "Hambúrguer / Brioche (Rico)", "Pão Rústico (0%)", "Personalizado"])
+    opcoes_perfil = [
+        "Cachorro-Quente / Forma (Macio)",
+        "Hambúrguer / Brioche (Rico)",
+        "Pão Rústico (0%)",
+        "Personalizado"
+    ]
+    perfil = st.selectbox("Perfil Rápido", opcoes_perfil)
     
     if "Cachorro" in perfil:
         def_acucar, def_gord, def_leite, def_ovos = 6.0, 5.0, 3.0, 0.0
@@ -362,6 +369,68 @@ with aba_custos:
         c_leite = st.number_input("Leite em Pó (R$/kg)", min_value=10.0, max_value=80.0, value=30.0, step=1.0)
         c_ovo_unidade = st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=0.75, step=0.05)
         margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
+
+with aba_calc:
+    st.info(
+        "👋 **Como usar a Calculadora & IA:**\n\n"
+        "1. **Passo 1:** Na barra lateral à esquerda, configure o **Modo de Cálculo** (seja por peso total, quantidade de pães ou farinha disponível no estoque) e o formato desejado.\n"
+        "2. **Passo 2 (Opcional):** Envie a foto da tabela nutricional da sua farinha no campo abaixo. A IA Gemini irá extrair a proteína e calcular a hidratação ideal automaticamente.\n"
+        "3. **Passo 3:** Clique em **Calcular Ficha de Produção Completa** para visualizar os ingredientes, os custos e baixar o PDF em formato profissional."
+    )
+
+    col_up, col_prev = st.columns([2, 1])
+    with col_up:
+        st.subheader("Scanner de Rótulo & Simulação Manual")
+        foto_upload = st.file_uploader("Enviar foto da tabela nutricional da farinha (Opcional)", type=["jpg", "jpeg", "png"])
+        b_acao = st.button("✨ Calcular Ficha de Produção Completa")
+
+    if foto_upload is not None:
+        img = Image.open(foto_upload)
+        with col_prev:
+            st.image(img, caption="Rótulo", use_container_width=True)
+
+    if b_acao:
+        with st.spinner("Processando cálculo matemático e inteligência..."):
+            dados_ia = {
+                "marca": "Farinha Padrão / Manual",
+                "proteina_g_por_50g": 6.0,
+                "forca_estimada": "Alta",
+                "hidratacao_minima": 60,
+                "contem_gluten": True
+            }
+            
+            if foto_upload is not None:
+                if not chave_api:
+                    st.error("⚠️ Chave API Gemini não configurada nas Secrets do Streamlit.")
+                else:
+                    res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
+                    if "erro" not in res_ia:
+                        dados_ia = res_ia
+
+            calc = CalculadoraPanificacao(
+                peso_total_massa=peso_desejado,
+                hidratacao_pct=dados_ia.get("hidratacao_minima", 60),
+                sal_pct=sal_pct,
+                tipo_fermento=fermento_limpo,
+                temp_ambiente=temp_ambiente,
+                contem_gluten=dados_ia.get("contem_gluten", True),
+                peso_porcao_g=peso_porcao_g,
+                nome_formato=nome_formato,
+                acucar_pct=acucar_pct,
+                gordura_pct=gordura_pct,
+                leite_po_pct=leite_po_pct,
+                ovos_pct=ovos_pct,
+                custo_farinha_kg=c_farinha,
+                custo_fermento_kg=c_fermento,
+                custo_acucar_kg=c_acucar,
+                custo_gordura_kg=c_gordura,
+                custo_leite_po_kg=c_leite,
+                custo_ovo_unidade=c_ovo_unidade,
+                custo_sal_kg=c_sal,
+                margem_lucro_pct=margem_lucro
+            )
+            st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
+            st.success("Ficha calculada com sucesso!")
 
 # ==========================================
 # 6. EXIBIÇÃO DOS RESULTADOS & PDF
@@ -418,9 +487,14 @@ if "resultado_atual" in st.session_state:
         pdf.set_font("Arial", "", 11)
         peso_total_int = int(receita.get('peso_total_g', 0))
         nome_formato_limpo = str(receita.get('nome_formato', 'pao')).lower().replace(' ', '_')
-        pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa Total: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
-        pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"), ln=True)
-        pdf.cell(0, 8, txt=limpar_texto_pdf(f"Custo Total: R$ {receita.get('custo_total_fornada')} | Custo/Un: R$ {receita.get('custo_por_unidade')} | Preco Sugerido: R$ {receita.get('preco_sugerido_unidade')} ({receita.get('margem_lucro_pct')}%)"), ln=True)
+        
+        linha_resumo_1 = f"Farinha: {dados_ia.get('marca')} | Massa Total: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"
+        linha_resumo_2 = f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"
+        linha_resumo_3 = f"Custo Total: R$ {receita.get('custo_total_fornada')} | Custo/Un: R$ {receita.get('custo_por_unidade')} | Preco Sugerido: R$ {receita.get('preco_sugerido_unidade')} ({receita.get('margem_lucro_pct')}%)"
+        
+        pdf.cell(0, 8, txt=limpar_texto_pdf(linha_resumo_1), ln=True)
+        pdf.cell(0, 8, txt=limpar_texto_pdf(linha_resumo_2), ln=True)
+        pdf.cell(0, 8, txt=limpar_texto_pdf(linha_resumo_3), ln=True)
         pdf.ln(5)
 
         pdf.set_fill_color(35, 31, 30)
