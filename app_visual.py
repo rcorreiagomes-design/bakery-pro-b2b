@@ -47,7 +47,7 @@ st.markdown("""
         color: #D6C7B2 !important;
     }
 
-    /* ABAS (TABS) NO TOPO */
+    /* ABAS (TABS) NO TOPO - Cores sempre visíveis e legíveis */
     button[data-baseweb="tab"] {
         background-color: transparent !important;
     }
@@ -57,6 +57,7 @@ st.markdown("""
         color: #231F1E !important;
         font-weight: 600 !important;
         font-size: 1.05rem !important;
+        opacity: 1 !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] p, 
     button[data-baseweb="tab"][aria-selected="true"] div, 
@@ -205,7 +206,7 @@ logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 # ==========================================
-# 4. CABEÇALHO & BARRA LATERAL COMPACTA
+# 4. CABEÇALHO & BARRA LATERAL (Com Nova Opção de Estoque)
 # ==========================================
 if logo_b64:
     st.markdown(f"""
@@ -235,7 +236,14 @@ with st.sidebar:
         st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
     st.markdown("### 🥖 Planeamento")
-    modo_planeamento = st.radio("Modo:", ["Pelo Peso Total da Massa (g)", "Pela Quantidade de Pães"])
+    
+    # Adicionada a nova opção de cálculo por Farinha Disponível
+    modo_planeamento = st.radio("Modo:", [
+        "Pelo Peso Total da Massa (g)", 
+        "Pela Quantidade de Pães",
+        "Por Farinha Disponível (Estoque)"
+    ])
+    
     formato_escolhido = st.selectbox("Formato", list(FORMATOS_PADARIA.keys()))
     peso_padrao = FORMATOS_PADARIA[formato_escolhido]
 
@@ -251,12 +259,18 @@ with st.sidebar:
 
     if modo_planeamento == "Pelo Peso Total da Massa (g)":
         peso_desejado = st.slider("Peso Total (g)", 500, 15000, 3500, 100)
-    else:
+    elif modo_planeamento == "Pela Quantidade de Pães":
         if peso_porcao_g <= 0:
             peso_porcao_g = 70
         qtd_encomenda = st.number_input("Quantidade de Pães", min_value=1, max_value=500, value=50, step=1)
         peso_desejado = int(qtd_encomenda * peso_porcao_g)
         st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
+    else:
+        # NOVO MODO: Baseado na farinha disponível em gramas (ex: 1000g = 1kg)
+        farinha_disponivel_g = st.number_input("Farinha Disponível (g)", min_value=100, max_value=50000, value=1000, step=100)
+        # Estimativa aproximada do peso total considerando hidratação média de 60% + sal + fermento
+        peso_desejado = int(farinha_disponivel_g * 1.65)
+        st.info(f"🌾 **Estoque Farinha:** {farinha_disponivel_g}g")
 
     st.markdown("---")
     tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
