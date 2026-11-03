@@ -47,15 +47,15 @@ st.markdown("""
         color: #D6C7B2 !important;
     }
 
-    /* ABAS (TABS) NO TOPO - Cores sempre visíveis e legíveis */
+    /* ABAS (TABS) NO TOPO - Contraste forte e visível para todas as abas */
     button[data-baseweb="tab"] {
         background-color: transparent !important;
     }
     button[data-baseweb="tab"] p, 
     button[data-baseweb="tab"] div, 
     button[data-baseweb="tab"] span {
-        color: #231F1E !important;
-        font-weight: 600 !important;
+        color: #2B2118 !important;
+        font-weight: 700 !important;
         font-size: 1.05rem !important;
         opacity: 1 !important;
     }
@@ -66,6 +66,11 @@ st.markdown("""
     }
     button[data-baseweb="tab"][aria-selected="true"] {
         border-bottom-color: #C87D32 !important;
+    }
+
+    /* TEXTOS E RÓTULOS NO CORPO PRINCIPAL (Garante legibilidade total) */
+    .stMarkdown p, .stRadio label, .stSelectbox label, .stSlider label, div[data-baseweb="select"] span {
+        color: #2B2118 !important;
     }
 
     /* CAIXA E BOTÃO DE UPLOAD DE ARQUIVOS */
@@ -206,7 +211,7 @@ logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 chave_api = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 
 # ==========================================
-# 4. CABEÇALHO & BARRA LATERAL (Com Nova Opção de Estoque)
+# 4. CABEÇALHO & BARRA LATERAL (Planejamento)
 # ==========================================
 if logo_b64:
     st.markdown(f"""
@@ -235,9 +240,8 @@ with st.sidebar:
     if logo_b64:
         st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
-    st.markdown("### 🥖 Planeamento")
+    st.markdown("### 🥖 Planejamento")
     
-    # Adicionada a nova opção de cálculo por Farinha Disponível
     modo_planeamento = st.radio("Modo:", [
         "Pelo Peso Total da Massa (g)", 
         "Pela Quantidade de Pães",
@@ -266,9 +270,7 @@ with st.sidebar:
         peso_desejado = int(qtd_encomenda * peso_porcao_g)
         st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
     else:
-        # NOVO MODO: Baseado na farinha disponível em gramas (ex: 1000g = 1kg)
         farinha_disponivel_g = st.number_input("Farinha Disponível (g)", min_value=100, max_value=50000, value=1000, step=100)
-        # Estimativa aproximada do peso total considerando hidratação média de 60% + sal + fermento
         peso_desejado = int(farinha_disponivel_g * 1.65)
         st.info(f"🌾 **Estoque Farinha:** {farinha_disponivel_g}g")
 
