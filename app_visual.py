@@ -253,7 +253,7 @@ with st.sidebar:
         st.markdown(f'<div style="text-align: center; margin-bottom: 4px;"><img src="data:image/png;base64,{logo_b64}" style="width: 65px;"></div>', unsafe_allow_html=True)
 
     st.markdown("### 🥖 Planejamento")
-    st.caption("Configure os parâmetros base da sua fornada:")
+    st.caption("Configure os parâmetros base:")
     
     modo_planeamento = st.radio("Modo de Cálculo:", [
         "Pelo Peso Total da Massa (g)", 
@@ -339,7 +339,6 @@ with aba_custos:
         margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
 
 with aba_calc:
-    # Guia de Introdução para novos utilizadores
     st.markdown("""
         <div class="guia-passo">
             <b>👋 Bem-vindo ao Massa Tradicional! Siga estes passos simples:</b><br>
@@ -384,74 +383,4 @@ with aba_calc:
                 acucar_pct=acucar_pct,
                 gordura_pct=gordura_pct,
                 leite_po_pct=leite_po_pct,
-                ovos_pct=ovos_pct,
-                custo_farinha_kg=c_farinha,
-                custo_fermento_kg=c_fermento,
-                custo_acucar_kg=c_acucar,
-                custo_gordura_kg=c_gordura,
-                custo_leite_po_kg=c_leite,
-                custo_ovo_unidade=c_ovo_unidade,
-                custo_sal_kg=c_sal,
-                margem_lucro_pct=margem_lucro
-            )
-            st.session_state["resultado_atual"] = {"dados_ia": dados_ia, "receita": calc.calcular()}
-            st.success("Ficha calculada com sucesso!")
-
-# ==========================================
-# 6. EXIBIÇÃO DOS RESULTADOS & PDF
-# ==========================================
-if "resultado_atual" in st.session_state:
-    res = st.session_state["resultado_atual"]
-    dados_ia = res["dados_ia"]
-    receita = res["receita"]
-    contem_gluten = dados_ia.get("contem_gluten", True)
-
-    st.markdown("---")
-    if not contem_gluten:
-        st.warning("⚠️ **PROTOCOLO SEM GLÚTEN:** Adicionado 2% de Goma Xantana.")
-
-    st.subheader(f"📋 Ficha Técnica — {dados_ia.get('marca')} ({receita.get('peso_total_g')}g de Massa)")
-
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("🌾 Farinha Base", f"{receita.get('farinha_g')} g")
-    m2.metric("💧 Água", f"{receita.get('agua_ml')} ml", f"Ideal: {receita.get('temp_agua_c')} °C")
-    m3.metric("🧂 Sal", f"{receita.get('sal_g')} g")
-    m4.metric("🦠 Fermento", f"{receita.get('fermento_g')} g")
-
-    if receita.get("massa_enriquecida"):
-        e1, e2, e3, e4 = st.columns(4)
-        e1.metric("🍬 Açúcar", f"{receita.get('acucar_g')} g")
-        e2.metric("🧈 Manteiga", f"{receita.get('gordura_g')} g")
-        e3.metric("🥛 Leite Pó", f"{receita.get('leite_po_g')} g")
-        e4.metric("🥚 Ovos", f"{receita.get('ovos_g')} g", f"~{receita.get('unidades_ovos_inteiras')} unidades")
-
-    p1, p2, p3 = st.columns(3)
-    p1.metric("🥖 Formato", receita.get("nome_formato"), f"{receita.get('peso_porcao_g')}g/un")
-    p2.metric("📦 Rendimento", f"{receita.get('qtd_unidades')} unidades")
-    p3.metric("✂️ Sobra", f"{receita.get('sobra_massa_g')} g")
-
-    st.markdown("#### 💰 Custos & Precificação Comercial")
-    f1, f2, f3 = st.columns(3)
-    f1.metric("💵 Custo Total", f"R$ {receita.get('custo_total_fornada'):.2f}")
-    f2.metric("🏷️ Custo / Unidade", f"R$ {receita.get('custo_por_unidade'):.2f}")
-    f3.metric("💡 Preço Sugerido", f"R$ {receita.get('preco_sugerido_unidade'):.2f}", f"Margem: {receita.get('margem_lucro_pct')}%")
-
-    # ==========================================
-    # 7. GERAÇÃO SEGURA DO PDF
-    # ==========================================
-    try:
-        pdf = FPDF()
-        pdf.add_page()
-        if caminho_logo:
-            pdf.image(caminho_logo, x=10, y=10, w=24)
-        pdf.set_font("Arial", "B", 18)
-        espaco = "          " if caminho_logo else ""
-        pdf.cell(0, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA DE BANCADA"), ln=True)
-        pdf.ln(10)
-
-        pdf.set_font("Arial", "", 11)
-        peso_total_int = int(receita.get('peso_total_g', 0))
-        nome_formato_limpo = str(receita.get('nome_formato', 'pao')).lower().replace(' ', '_')
-        pdf.cell(0, 8, txt=limpar_texto_pdf(f"Farinha: {dados_ia.get('marca')} | Massa Total: {receita.get('peso_total_g')}g | Hidratacao: {receita.get('hidratacao_pct')}%"), ln=True)
-        pdf.cell(0, 8, txt=limpar_texto_pdf(f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"), ln=True)
-        pdf.
+                ovos_pct=ovos_
