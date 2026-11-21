@@ -286,3 +286,31 @@ def gerar_cronograma_reverso(hora_pronto: datetime.time, nome_formato: str, rece
             (85, "🍞 Transferir para a forma untada e alisar"),
             (40, "🔥 Preaquecer forno a 190 °C"),
             (35, "⏲️ Colocar no forno"),
+            (0, "✅ Pão pronto! Retirar e deixar esfriar na grade"),
+        ]
+    elif tipo_massa == "focaccia":
+        etapas_min = [
+            (195, "🥣 Mistura inicial e descanso (15 min)"),
+            (180, "🧂 Incorporar sal/azeite e 1ª dobra"),
+            (150, "🔄 2ª dobra (Stretch & Fold)"),
+            (120, "🔄 3ª dobra (Stretch & Fold)"),
+            (90, "🫒 Transferir para a forma untada com azeite"),
+            (40, "🔥 Preaquecer forno a 220 °C"),
+            (25, "✨ Fazer covinhas, sal grosso/alecrim e levar ao forno"),
+            (0, "✅ Focaccia dourada e pronta!"),
+        ]
+    elif tipo_massa == "rustico":
+        etapas_min = [
+            (270, "💧 Autólise (misturar apenas farinha e água)"),
+            (240, "🦠 Incorporar fermento e sal"),
+            (210, "🔄 1ª dobra"),
+            (180, "🔄 2ª dobra"),
+            (150, "🔄 3ª dobra e fermentação em bloco"),
+            (90, "✂️ Divisão, pré-modelagem e modelagem final"),
+            (55, "🔥 Preaquecer forno no máximo (240 °C) com assadeira"),
+            (30, "🔪 Fazer corte (pestana) e assar com vapor"),
+            (0, "✅ Pão rústico pronto! Esfriar na grade"),
+        ]
+    else:
+        etapas_min = [
+            (155, "🥣 Mistura dos
