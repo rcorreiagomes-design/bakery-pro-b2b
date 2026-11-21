@@ -828,26 +828,29 @@ if "resultado_atual" in st.session_state:
         try:
             pdf = FPDF()
             pdf.add_page()
+            largura_util = pdf.w - 2 * pdf.l_margin
+
             if caminho_logo:
                 pdf.image(caminho_logo, x=10, y=10, w=24)
             pdf.set_font("Arial", "B", 18)
             espaco = "          " if caminho_logo else ""
-            pdf.cell(0, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA DE BANCADA"), ln=True)
+            pdf.cell(largura_util, 12, txt=limpar_texto_pdf(f"{espaco}MASSA TRADICIONAL - FICHA DE BANCADA"), ln=True)
             pdf.ln(10)
 
             pdf.set_font("Arial", "", 11)
             r1 = f"Farinha: {dados_ia.get('marca')} | Massa Total: {peso_total_int}g | Hidratacao: {receita.get('hidratacao_pct')}%"
             r2 = f"Rendimento: {receita.get('qtd_unidades')} un. de {receita.get('peso_porcao_g')}g ({receita.get('nome_formato')})"
             r3 = f"Custo Total: R$ {custo_tot:.2f} | Custo/Un: R$ {custo_un:.2f} | Preco Sugerido: R$ {preco_sug:.2f}"
-            pdf.cell(0, 8, txt=limpar_texto_pdf(r1), ln=True)
-            pdf.cell(0, 8, txt=limpar_texto_pdf(r2), ln=True)
-            pdf.cell(0, 8, txt=limpar_texto_pdf(r3), ln=True)
+            pdf.cell(largura_util, 8, txt=limpar_texto_pdf(r1), ln=True)
+            pdf.cell(largura_util, 8, txt=limpar_texto_pdf(r2), ln=True)
+            pdf.cell(largura_util, 8, txt=limpar_texto_pdf(r3), ln=True)
             pdf.ln(5)
 
+            col_w = largura_util / 2.0
             pdf.set_fill_color(35, 31, 30)
             pdf.set_text_color(255, 255, 255)
-            pdf.cell(95, 10, " Insumo", border=1, fill=True)
-            pdf.cell(95, 10, " Quantidade (Balanca / Caseira)", border=1, fill=True, ln=True)
+            pdf.cell(col_w, 10, " Insumo", border=1, fill=True)
+            pdf.cell(col_w, 10, " Quantidade (Balanca / Caseira)", border=1, fill=True, ln=True)
 
             pdf.set_text_color(0, 0, 0)
             linhas = [
@@ -871,15 +874,17 @@ if "resultado_atual" in st.session_state:
                 linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
 
             for ins, qtd in linhas:
-                pdf.cell(95, 10, limpar_texto_pdf(f" {ins}"), border=1)
-                pdf.cell(95, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
+                pdf.cell(col_w, 10, limpar_texto_pdf(f" {ins}"), border=1)
+                pdf.cell(col_w, 10, limpar_texto_pdf(f" {qtd}"), border=1, ln=True)
 
             pdf.ln(6)
+            pdf.set_x(pdf.l_margin)
             pdf.set_font("Arial", "B", 12)
-            pdf.cell(0, 8, txt="MODO DE PREPARO", ln=True)
+            pdf.cell(largura_util, 8, txt="MODO DE PREPARO", ln=True)
             pdf.set_font("Arial", "", 10)
             for p in passos_preparo:
-                pdf.multi_cell(0, 6, txt=limpar_texto_pdf(p.replace("**", "")))
+                pdf.set_x(pdf.l_margin)
+                pdf.multi_cell(largura_util, 6, txt=limpar_texto_pdf(p.replace("**", "")))
 
             saida_pdf = pdf.output(dest="S")
             bytes_pdf = saida_pdf.encode("latin-1", errors="ignore") if isinstance(saida_pdf, str) else bytes(saida_pdf)
