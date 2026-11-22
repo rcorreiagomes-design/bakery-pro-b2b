@@ -49,16 +49,23 @@ label, div[data-baseweb="select"] span, .stSlider label, .stNumberInput label {
     color: #2B2118 !important;
 }
 
+/* GARANTIR QUE O MEGA-MENU NÃO SEJA CORTADO PELO STREAMLIT */
+div[data-testid="stMarkdownContainer"],
+div[data-testid="element-container"],
+.stMarkdown {
+    overflow: visible !important;
+}
+
 /* BANNER SUPERIOR */
 #banner-topo {
     background: linear-gradient(135deg, #231F1E 0%, #362C28 100%) !important;
     padding: 18px 26px !important;
-    border-radius: 12px !important;
-    border-bottom: 4px solid #C87D32 !important;
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: 3px solid #C87D32 !important;
     display: flex !important;
     align-items: center !important;
     gap: 20px !important;
-    margin-bottom: 12px !important;
+    margin-bottom: 0 !important;
 }
 #banner-topo .titulo-principal {
     color: #FCEDC9 !important;
@@ -78,49 +85,97 @@ label, div[data-baseweb="select"] span, .stSlider label, .stNumberInput label {
     display: block !important;
 }
 
-/* MEGA-MENU CLARO E 100% LEGÍVEL (CREME COM TEXTO ESCURO) */
-div[data-testid="stPopover"] button,
-button[data-testid="stPopoverButton"] {
-    background-color: #F7EFE2 !important;
+/* MEGA-MENU HOVER ESTILO FLEISCHMANN (ABRE AO PASSAR O MOUSE, SEM CORTAR TEXTOS) */
+.mega-nav {
+    display: flex;
+    background-color: #2B221E;
+    border-radius: 0 0 12px 12px;
+    padding: 0 12px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 9999;
+    box-shadow: 0 4px 10px rgba(35, 31, 30, 0.14);
+}
+.mega-item {
+    position: relative;
+    flex: 1;
+    text-align: center;
+}
+.mega-trigger {
+    display: block;
+    padding: 13px 10px;
+    color: #FCEDC9 !important;
+    font-weight: 700;
+    font-size: 0.96rem;
+    cursor: pointer;
+    text-decoration: none !important;
+    transition: background 0.2s, color 0.2s;
+    border-bottom: 3px solid transparent;
+}
+.mega-item:hover .mega-trigger {
+    background-color: #3D312B;
+    color: #FFFFFF !important;
+    border-bottom: 3px solid #C87D32;
+}
+.mega-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 680px;
+    background-color: #FDFBF7;
+    border: 2px solid #C87D32;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 12px 28px rgba(35, 31, 30, 0.22);
+    z-index: 10000;
+    text-align: left;
+}
+.mega-dropdown.compact {
+    min-width: 300px;
+}
+.mega-dropdown.align-right {
+    left: auto;
+    right: 0;
+}
+.mega-item:hover .mega-dropdown {
+    display: block;
+}
+.mega-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.mega-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.mega-col-title {
+    color: #8C4A27 !important;
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #E6D7C3;
+}
+.mega-link {
+    display: block;
+    padding: 6px 8px;
+    margin-bottom: 4px;
     color: #231F1E !important;
-    border: 2px solid #C87D32 !important;
-    border-radius: 8px !important;
-    font-weight: 700 !important;
-    width: 100% !important;
-    padding: 10px 14px !important;
-    box-shadow: 0 2px 4px rgba(35, 31, 30, 0.08) !important;
+    text-decoration: none !important;
+    font-size: 0.90rem;
+    font-weight: 500;
+    border-radius: 6px;
+    white-space: normal;
+    line-height: 1.3;
+    transition: background 0.15s, color 0.15s;
 }
-div[data-testid="stPopover"] button p,
-div[data-testid="stPopover"] button span,
-div[data-testid="stPopover"] button div,
-button[data-testid="stPopoverButton"] p,
-button[data-testid="stPopoverButton"] span,
-button[data-testid="stPopoverButton"] div {
-    color: #231F1E !important;
-    font-weight: 700 !important;
-    opacity: 1 !important;
-}
-div[data-testid="stPopover"] button svg,
-button[data-testid="stPopoverButton"] svg {
-    fill: #231F1E !important;
-    color: #231F1E !important;
-}
-div[data-testid="stPopover"] button:hover,
-button[data-testid="stPopoverButton"]:hover {
-    background-color: #FCEDC9 !important;
-    border-color: #8C4A27 !important;
-}
-
-/* CONTEÚDO INTERNO DO POPOVER (FUNDO CLARO E LEGÍVEL) */
-div[data-testid="stPopoverBody"] {
-    background-color: #FDFBF7 !important;
-    border: 2px solid #C87D32 !important;
-    border-radius: 10px !important;
-}
-div[data-testid="stPopoverBody"] p,
-div[data-testid="stPopoverBody"] span,
-div[data-testid="stPopoverBody"] strong {
-    color: #231F1E !important;
+.mega-link:hover {
+    background-color: #FCEDC9;
+    color: #8C4A27 !important;
+    font-weight: 700;
 }
 
 /* UPLOAD */
@@ -164,7 +219,7 @@ section[data-testid="stSidebar"] hr {
     border-color: #C87D32 !important;
 }
 
-/* CARTÕES DE MÉTRICAS (SEM CORTAR TEXTO) */
+/* CARTÕES DE MÉTRICAS */
 [data-testid="stMetric"] {
     background-color: #FFFFFF !important;
     border: 1px solid #E6D7C3 !important;
@@ -179,7 +234,7 @@ section[data-testid="stSidebar"] hr {
 [data-testid="stMetricValue"] * {
     color: #231F1E !important;
     font-weight: 700 !important;
-    font-size: 1.5rem !important;
+    font-size: 1.45rem !important;
 }
 .stButton > button {
     background: linear-gradient(135deg, #C87D32 0%, #8C4A27 100%) !important;
@@ -213,7 +268,7 @@ section[data-testid="stSidebar"] hr {
 st.markdown(CSS_ESTILO, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CATÁLOGO DE RECEITAS PRONTAS (INSPIRADAS NA FLEISCHMANN, SEM LEITE EM PÓ)
+# 2. CATÁLOGO DE RECEITAS PRONTAS (SEM LEITE EM PÓ)
 # ==========================================
 RECEITAS_PRONTAS = {
     "meu_primeiro_pao": {
@@ -881,7 +936,7 @@ def montar_texto_whatsapp(dados_ia: dict, receita: dict, usar_caseira: bool, cha
     return "\n".join(linhas)
 
 # ==========================================
-# 5. IA / LEITOR DE RÓTULOS & FIREBASE
+# 5. IA / LEITOR DE RÓTULOS & FIREBASE (CONEXÃO + SALVAMENTO)
 # ==========================================
 class RotuloFarinha(BaseModel):
     marca: str = Field(description="Nome comercial ou fabricante da farinha")
@@ -908,6 +963,7 @@ def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
             continue
     return {"erro": "Falha na análise com a IA Gemini."}
 
+erro_firebase = None
 if not firebase_admin._apps:
     caminho_cred = os.path.join(os.path.dirname(__file__), "firebase_key.json")
     try:
@@ -915,12 +971,46 @@ if not firebase_admin._apps:
             cred = credentials.Certificate(caminho_cred)
             firebase_admin.initialize_app(cred)
         elif "firebase" in st.secrets:
-            cred = credentials.Certificate(dict(st.secrets["firebase"]))
+            cred_dict = dict(st.secrets["firebase"])
+            if "private_key" in cred_dict:
+                cred_dict["private_key"] = str(cred_dict["private_key"]).replace("\\n", "\n")
+            cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
-    except Exception:
-        pass
+        elif "FIREBASE_CREDENTIALS" in st.secrets:
+            raw = st.secrets["FIREBASE_CREDENTIALS"]
+            cred_dict = json.loads(raw) if isinstance(raw, str) else dict(raw)
+            if "private_key" in cred_dict:
+                cred_dict["private_key"] = str(cred_dict["private_key"]).replace("\\n", "\n")
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+        else:
+            erro_firebase = "Credenciais não encontradas (adicione a seção [firebase] nas Secrets do Streamlit Cloud)."
+    except Exception as e:
+        erro_firebase = f"Erro ao conectar no Firebase: {e}"
 
 db = firestore.client() if firebase_admin._apps else None
+
+def salvar_telemetria_firebase(dados_ia: dict, receita: dict, origem: str = "Scanner IA"):
+    if db is None:
+        return False
+    try:
+        registro = {
+            "data_hora": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "origem": origem,
+            "marca_farinha": dados_ia.get("marca", "Manual"),
+            "proteina_50g": dados_ia.get("proteina_g_por_50g", 0),
+            "forca": dados_ia.get("forca_estimada", "-"),
+            "contem_gluten": dados_ia.get("contem_gluten", True),
+            "formato": receita.get("nome_formato", "-"),
+            "peso_total_g": receita.get("peso_total_g", 0),
+            "hidratacao_pct": receita.get("hidratacao_pct", 0),
+            "qtd_unidades": receita.get("qtd_unidades", 0),
+            "custo_total_r$": round(float(receita.get("custo_total_fornada", 0) or 0), 2),
+        }
+        db.collection("scans_farinha").add(registro)
+        return True
+    except Exception:
+        return False
 
 def verificar_acesso_pro(credencial: str) -> bool:
     if not ATIVAR_PAYWALL:
@@ -962,13 +1052,8 @@ logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 chave_api = obter_secret("GEMINI_API_KEY", "")
 
 # ==========================================
-# 6. ESTADO DE NAVEGAÇÃO & GERADOR DE PRESET
+# 6. NAVEGAÇÃO VIA QUERY PARAMS (PARA O MEGA-MENU HOVER)
 # ==========================================
-if "pagina_atual" not in st.session_state:
-    st.session_state["pagina_atual"] = "receita_pronta"
-if "receita_id_atual" not in st.session_state:
-    st.session_state["receita_id_atual"] = "meu_primeiro_pao"
-
 c_farinha = st.session_state.get("c_farinha", 5.50)
 c_fermento = st.session_state.get("c_fermento", 35.0)
 c_acucar = st.session_state.get("c_acucar", 4.50)
@@ -1019,90 +1104,102 @@ def gerar_receita_preset(receita_id: str, qtd_override: int = None, temp_amb: fl
         "extra_nota": preset.get("extra_nota", ""),
     }
 
+qp = st.query_params
+if "pagina" in qp:
+    st.session_state["pagina_atual"] = qp["pagina"]
+if "rid" in qp and qp["rid"] in RECEITAS_PRONTAS:
+    rid_novo = qp["rid"]
+    if st.session_state.get("receita_id_atual") != rid_novo or "resultado_atual" not in st.session_state:
+        st.session_state["receita_id_atual"] = rid_novo
+        gerar_receita_preset(rid_novo)
+
+if "pagina_atual" not in st.session_state:
+    st.session_state["pagina_atual"] = "receita_pronta"
+if "receita_id_atual" not in st.session_state:
+    st.session_state["receita_id_atual"] = "meu_primeiro_pao"
+
 # ==========================================
-# 7. BANNER & MEGA-MENU SUPERIOR (CLARO E LEGÍVEL)
+# 7. BANNER + MEGA-MENU HOVER (ABRE AO PASSAR O MOUSE)
 # ==========================================
 if logo_b64:
     logo_html = '<img src="data:image/png;base64,' + logo_b64 + '" style="width: 100%; height: 100%; object-fit: contain;">'
 else:
     logo_html = "🌾"
 
-banner_html = (
-    '<div id="banner-topo">'
-    f'<div style="width: 78px; height: 78px; flex-shrink: 0;">{logo_html}</div>'
-    '<div>'
-    '<div class="titulo-principal">Massa Tradicional</div>'
-    '<div class="subtitulo-principal">Receitas Prontas, Calculadora Profissional & B2B Intelligence</div>'
-    '</div></div>'
-)
-st.markdown(banner_html, unsafe_allow_html=True)
+def links_html(ids_lista):
+    return "".join(
+        f'<a class="mega-link" href="?pagina=receita_pronta&rid={rid}" target="_self">{RECEITAS_PRONTAS[rid]["titulo"]}</a>'
+        for rid in ids_lista
+    )
 
-nav1, nav2, nav3, nav4 = st.columns(4)
+col_facil_html = links_html(["meu_primeiro_pao", "pao_frances", "pao_batata", "air_fryer", "liquidificador", "sem_sova", "frigideira"])
+col_int_html = links_html(["integral_100", "meio_integral", "sem_gluten", "pao_forma", "cachorro_quente"])
+col_art_html = links_html(["brioche", "pao_doce", "rustico", "focaccia"])
 
-with nav1:
-    with st.popover("🍞 Receitas Prontas", use_container_width=True):
-        mc1, mc2, mc3 = st.columns(3)
-        with mc1:
-            st.markdown("**⚡ Pão Fácil**")
-            for rid in ["meu_primeiro_pao", "pao_frances", "pao_batata", "air_fryer", "liquidificador", "sem_sova", "frigideira"]:
-                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
-                    st.session_state["pagina_atual"] = "receita_pronta"
-                    st.session_state["receita_id_atual"] = rid
-                    gerar_receita_preset(rid)
-                    st.rerun()
-        with mc2:
-            st.markdown("**🌾 Integrais & Especiais**")
-            for rid in ["integral_100", "meio_integral", "sem_gluten", "pao_forma", "cachorro_quente"]:
-                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
-                    st.session_state["pagina_atual"] = "receita_pronta"
-                    st.session_state["receita_id_atual"] = rid
-                    gerar_receita_preset(rid)
-                    st.rerun()
-        with mc3:
-            st.markdown("**🥐 Doces & Artesanais**")
-            for rid in ["brioche", "pao_doce", "rustico", "focaccia"]:
-                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
-                    st.session_state["pagina_atual"] = "receita_pronta"
-                    st.session_state["receita_id_atual"] = rid
-                    gerar_receita_preset(rid)
-                    st.rerun()
-
-with nav2:
-    with st.popover("🛠️ Faça Você Mesmo", use_container_width=True):
-        st.markdown("**Monte sua receita do zero**")
-        if st.button("🚀 Calculadora Avançada & Scanner IA", key="nav_calc", use_container_width=True):
-            st.session_state["pagina_atual"] = "calculadora"
-            st.rerun()
-        if st.button("🧈 Enriquecimento (Açúcar / Manteiga / Ovos)", key="nav_extra", use_container_width=True):
-            st.session_state["pagina_atual"] = "enriquecimento"
-            st.rerun()
-        if st.button("💰 Tabela de Custos & Precificação", key="nav_custos", use_container_width=True):
-            st.session_state["pagina_atual"] = "custos"
-            st.rerun()
-
-with nav3:
-    with st.popover("📚 Escola & SOS Padeiro", use_container_width=True):
-        ec1, ec2 = st.columns(2)
-        with ec1:
-            st.markdown("**📖 Aprenda o Básico**")
-            if st.button("🦠 Diferenças de Fermentos", key="nav_escola_ferm", use_container_width=True):
-                st.session_state["pagina_atual"] = "escola"
-                st.rerun()
-            if st.button("🙌 Como Sovar & Ponto de Véu", key="nav_escola_sova", use_container_width=True):
-                st.session_state["pagina_atual"] = "escola"
-                st.rerun()
-        with ec2:
-            st.markdown("**🆘 SOS Visual**")
-            if st.button("🔍 Abrir Diagnóstico Visual de Pães", key="nav_sos", use_container_width=True):
-                st.session_state["pagina_atual"] = "sos"
-                st.rerun()
-
-with nav4:
-    with st.popover("📊 B2B & PRO", use_container_width=True):
-        st.markdown("**Gestão & Assinatura**")
-        if st.button("📊 Telemetria B2B (Firebase)", key="nav_b2b", use_container_width=True):
-            st.session_state["pagina_atual"] = "b2b"
-            st.rerun()
+cabecalho_e_menu = f"""
+<div id="banner-topo">
+    <div style="width: 76px; height: 76px; flex-shrink: 0;">{logo_html}</div>
+    <div>
+        <div class="titulo-principal">Massa Tradicional</div>
+        <div class="subtitulo-principal">Receitas Prontas, Calculadora Profissional & B2B Intelligence</div>
+    </div>
+</div>
+<div class="mega-nav">
+    <div class="mega-item">
+        <span class="mega-trigger">🍞 Receitas Prontas ▾</span>
+        <div class="mega-dropdown">
+            <div class="mega-grid-3">
+                <div>
+                    <div class="mega-col-title">⚡ Pão Fácil</div>
+                    {col_facil_html}
+                </div>
+                <div>
+                    <div class="mega-col-title">🌾 Integrais & Especiais</div>
+                    {col_int_html}
+                </div>
+                <div>
+                    <div class="mega-col-title">🥐 Doces & Artesanais</div>
+                    {col_art_html}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mega-item">
+        <span class="mega-trigger">🛠️ Faça Você Mesmo ▾</span>
+        <div class="mega-dropdown compact">
+            <div class="mega-col-title">Monte sua receita do zero</div>
+            <a class="mega-link" href="?pagina=calculadora" target="_self">🚀 Calculadora Avançada & Scanner IA</a>
+            <a class="mega-link" href="?pagina=enriquecimento" target="_self">🧈 Enriquecimento (Açúcar / Manteiga / Ovos)</a>
+            <a class="mega-link" href="?pagina=custos" target="_self">💰 Tabela de Custos & Precificação</a>
+        </div>
+    </div>
+    <div class="mega-item">
+        <span class="mega-trigger">📚 Escola & SOS ▾</span>
+        <div class="mega-dropdown align-right" style="min-width: 460px;">
+            <div class="mega-grid-2">
+                <div>
+                    <div class="mega-col-title">📖 Aprenda o Básico</div>
+                    <a class="mega-link" href="?pagina=escola" target="_self">🦠 Diferenças de Fermentos</a>
+                    <a class="mega-link" href="?pagina=escola" target="_self">🙌 Como Sovar & Teste da Janela</a>
+                    <a class="mega-link" href="?pagina=escola" target="_self">⏱️ Regras de Ouro da Fermentação</a>
+                </div>
+                <div>
+                    <div class="mega-col-title">🆘 SOS Visual</div>
+                    <a class="mega-link" href="?pagina=sos" target="_self">🔍 Abrir Diagnóstico Visual de Pães</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mega-item">
+        <span class="mega-trigger">📊 B2B & PRO ▾</span>
+        <div class="mega-dropdown compact align-right">
+            <div class="mega-col-title">Gestão & Assinatura</div>
+            <a class="mega-link" href="?pagina=b2b" target="_self">📊 Telemetria B2B (Firebase)</a>
+        </div>
+    </div>
+</div>
+"""
+st.markdown(cabecalho_e_menu, unsafe_allow_html=True)
 
 # ==========================================
 # 8. BARRA LATERAL CONTEXTUAL
@@ -1177,7 +1274,7 @@ with st.sidebar:
         temp_ambiente = st.number_input("Temp. Ambiente (°C)", min_value=10.0, max_value=40.0, value=24.0, step=0.5)
     else:
         st.markdown("### 🌾 Massa Tradicional")
-        st.caption("Use o menu superior para escolher uma receita pronta ou montar a sua.")
+        st.caption("Passe o mouse no menu superior para escolher uma receita ou ferramenta.")
         temp_ambiente = 24.0
 
     st.markdown("---")
@@ -1208,7 +1305,7 @@ if pagina == "receita_pronta":
 
     st.info(
         f"**{preset_atual['titulo']}** — {preset_atual['descricao']}\n\n"
-        "💡 Quer trocar de pão? Clique em **🍞 Receitas Prontas** no menu acima. Quer mudar a quantidade? Ajuste na barra lateral à esquerda."
+        "💡 Passe o mouse em **🍞 Receitas Prontas** no menu acima para trocar de pão, ou ajuste a quantidade na barra lateral."
     )
 
 elif pagina == "enriquecimento":
@@ -1242,6 +1339,7 @@ elif pagina == "enriquecimento":
         st.session_state["ovos_pct"] = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
 
     if st.button("🚀 Ir para Calculadora & Gerar Ficha"):
+        st.query_params["pagina"] = "calculadora"
         st.session_state["pagina_atual"] = "calculadora"
         st.rerun()
 
@@ -1260,13 +1358,14 @@ elif pagina == "custos":
         st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, float(margem_lucro), 10.0, key="margem_lucro")
 
     if st.button("🚀 Voltar para Calculadora"):
+        st.query_params["pagina"] = "calculadora"
         st.session_state["pagina_atual"] = "calculadora"
         st.rerun()
 
 elif pagina == "calculadora":
     mostrar_resultado = True
     st.subheader("🚀 Calculadora Avançada & Scanner de Rótulo")
-    st.info("Configure peso, formato e % de farinha integral na barra lateral. Se quiser, envie a foto da farinha para a IA ler a proteína.")
+    st.info("Configure peso, formato e % de farinha integral na barra lateral. Se quiser, envie a foto da farinha para a IA ler a proteína e salvar no histórico.")
     col_up, col_prev = st.columns([2, 1])
     with col_up:
         if usuario_pro:
@@ -1290,6 +1389,7 @@ elif pagina == "calculadora":
                 "hidratacao_minima": 60,
                 "contem_gluten": True,
             }
+            origem_calc = "Simulação Manual"
             if foto_upload is not None:
                 if not chave_api:
                     st.error("⚠️ Chave API Gemini não configurada nas Secrets do Streamlit.")
@@ -1297,6 +1397,9 @@ elif pagina == "calculadora":
                     res_ia = analisar_imagem_farinha(Image.open(foto_upload), chave_api)
                     if "erro" not in res_ia:
                         dados_ia = res_ia
+                        origem_calc = "Scanner IA"
+                    else:
+                        st.warning(res_ia["erro"])
 
             hidr_ajustada = int(dados_ia.get("hidratacao_minima", 60) + round(farinha_integral_pct * 0.08))
             calc = CalculadoraPanificacao(
@@ -1321,14 +1424,19 @@ elif pagina == "calculadora":
                 custo_sal_kg=c_sal,
                 margem_lucro_pct=margem_lucro,
             )
+            receita_gerada = calc.calcular()
             st.session_state["resultado_atual"] = {
                 "dados_ia": dados_ia,
-                "receita": calc.calcular(),
+                "receita": receita_gerada,
                 "integral_pct": farinha_integral_pct,
                 "metodo": "",
                 "extra_nota": "",
             }
-            st.success("Ficha calculada com sucesso!")
+            salvou_bd = salvar_telemetria_firebase(dados_ia, receita_gerada, origem=origem_calc)
+            if salvou_bd:
+                st.success("Ficha calculada e salva no banco de dados Firebase!")
+            else:
+                st.success("Ficha calculada com sucesso!")
 
 elif pagina == "escola":
     st.subheader("📚 Escola do Pão — Guia Rápido para Iniciantes")
@@ -1389,7 +1497,23 @@ elif pagina == "b2b":
     st.subheader("📊 Telemetria B2B & Histórico")
     st.info("Histórico de farinhas escaneadas e simulações salvas no Firebase.")
     if db is None:
-        st.info("Firebase não configurado.")
+        st.warning(f"⚠️ Firebase não conectado. {erro_firebase or ''}")
+        st.markdown(
+            "**Como ativar no Streamlit Cloud:**\n"
+            "1. Abra **Settings → Secrets** do seu app no Streamlit Cloud.\n"
+            "2. Cole os campos do seu `firebase_key.json` dentro de uma seção `[firebase]`:\n"
+            "```toml\n"
+            "[firebase]\n"
+            "type = \"service_account\"\n"
+            "project_id = \"seu-projeto\"\n"
+            "private_key_id = \"...\"\n"
+            "private_key = \"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\"\n"
+            "client_email = \"...\"\n"
+            "client_id = \"...\"\n"
+            "auth_uri = \"[https://accounts.google.com/o/oauth2/auth](https://accounts.google.com/o/oauth2/auth)\"\n"
+            "token_uri = \"[https://oauth2.googleapis.com/token](https://oauth2.googleapis.com/token)\"\n"
+            "```"
+        )
     else:
         try:
             docs = db.collection("scans_farinha").stream()
@@ -1397,9 +1521,9 @@ elif pagina == "b2b":
             if lista:
                 st.dataframe(pd.DataFrame(lista), use_container_width=True)
             else:
-                st.info("Nenhum registo na base de dados.")
+                st.info("Firebase conectado! Nenhum registo salvo ainda — faça um cálculo ou scan na Calculadora para testar.")
         except Exception as e:
-            st.error(f"Erro: {e}")
+            st.error(f"Erro ao ler Firebase: {e}")
 
 # ==========================================
 # 10. EXIBIÇÃO DOS RESULTADOS (FICHA TÉCNICA)
