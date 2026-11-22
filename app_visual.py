@@ -52,13 +52,13 @@ label, div[data-baseweb="select"] span, .stSlider label, .stNumberInput label {
 /* BANNER SUPERIOR */
 #banner-topo {
     background: linear-gradient(135deg, #231F1E 0%, #362C28 100%) !important;
-    padding: 20px 26px !important;
+    padding: 18px 26px !important;
     border-radius: 12px !important;
     border-bottom: 4px solid #C87D32 !important;
     display: flex !important;
     align-items: center !important;
     gap: 20px !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 12px !important;
 }
 #banner-topo .titulo-principal {
     color: #FCEDC9 !important;
@@ -78,36 +78,22 @@ label, div[data-baseweb="select"] span, .stSlider label, .stNumberInput label {
     display: block !important;
 }
 
-/* ABAS COM ALTO CONTRASTE (VISÍVEIS EM QUALQUER TEMA) */
-[data-testid="stTabs"] [data-baseweb="tab-list"] {
-    gap: 8px !important;
-    background-color: transparent !important;
-    border-bottom: 2px solid #E6D7C3 !important;
-    padding-bottom: 4px !important;
-}
-[data-testid="stTabs"] button[data-baseweb="tab"] {
-    background-color: #EFE6D8 !important;
-    border: 1px solid #D8C5AD !important;
-    border-radius: 8px 8px 0 0 !important;
-    padding: 8px 16px !important;
-    opacity: 1 !important;
-}
-[data-testid="stTabs"] button[data-baseweb="tab"] * {
-    color: #231F1E !important;
-    font-weight: 700 !important;
-    font-size: 0.98rem !important;
-    opacity: 1 !important;
-}
-[data-testid="stTabs"] button[data-baseweb="tab"]:hover {
-    background-color: #E5D4BE !important;
-}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] {
+/* MEGA-MENU (BOTÕES POPOVER NO TOPO) */
+[data-testid="stPopover"] > button {
     background-color: #231F1E !important;
-    border-color: #C87D32 !important;
-    border-bottom: 3px solid #C87D32 !important;
-}
-[data-testid="stTabs"] button[data-baseweb="tab"][aria-selected="true"] * {
     color: #FCEDC9 !important;
+    border: 1px solid #C87D32 !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    width: 100% !important;
+    padding: 10px 14px !important;
+}
+[data-testid="stPopover"] > button * {
+    color: #FCEDC9 !important;
+}
+[data-testid="stPopover"] > button:hover {
+    background-color: #362C28 !important;
+    border-color: #FCEDC9 !important;
 }
 
 /* UPLOAD */
@@ -144,7 +130,7 @@ section[data-testid="stSidebar"] div[data-baseweb="select"] * {
     background-color: #362C28 !important;
 }
 section[data-testid="stSidebar"] div.stVerticalBlock > div {
-    margin-bottom: -0.5rem !important;
+    margin-bottom: -0.4rem !important;
 }
 section[data-testid="stSidebar"] hr {
     margin: 0.6rem 0 !important;
@@ -179,15 +165,25 @@ section[data-testid="stSidebar"] hr {
     border-radius: 8px !important;
     border: none !important;
 }
+.sos-visual-box {
+    background-color: #FFFFFF;
+    border: 1px solid #E6D7C3;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+}
 </style>
 """
 st.markdown(CSS_ESTILO, unsafe_allow_html=True)
 
 # ==========================================
-# 2. CATÁLOGO DE RECEITAS PRONTAS (MODO INICIANTE)
+# 2. CATÁLOGO DE RECEITAS PRONTAS (SEM LEITE EM PÓ)
 # ==========================================
 RECEITAS_PRONTAS = {
-    "🍞 Pão Caseiro Macio (2 pães grandes)": {
+    "meu_primeiro_pao": {
+        "titulo": "🍞 Meu Primeiro Pão (Caseiro Macio)",
+        "categoria": "Pão Fácil",
         "nome_formato": "Pão Caseiro Macio",
         "peso_porcao_g": 550,
         "qtd_padrao": 2,
@@ -197,11 +193,77 @@ RECEITAS_PRONTAS = {
         "integral_pct": 0,
         "acucar_pct": 6.0,
         "gordura_pct": 5.0,
-        "leite_po_pct": 3.0,
         "ovos_pct": 5.0,
+        "metodo": "macio",
         "descricao": "Clássico pão caseiro fofinho para o café da tarde. Fácil de sovar e modelar.",
     },
-    "🌾 Pão 100% Integral Macio (2 pães)": {
+    "sem_sova": {
+        "titulo": "🥣 Pão Sem Sova (Na Tigela)",
+        "categoria": "Pão Fácil",
+        "nome_formato": "Pão Sem Sova",
+        "peso_porcao_g": 700,
+        "qtd_padrao": 1,
+        "hidratacao_pct": 72,
+        "sal_pct": 2.0,
+        "tipo_fermento": "Seco",
+        "integral_pct": 0,
+        "acucar_pct": 2.0,
+        "gordura_pct": 3.0,
+        "ovos_pct": 0.0,
+        "metodo": "sem_sova",
+        "descricao": "Basta misturar com uma colher e deixar o tempo fazer o trabalho. Casca crocante e zero esforço.",
+    },
+    "air_fryer": {
+        "titulo": "🔥 Pão na Air Fryer (Rápido)",
+        "categoria": "Pão Fácil",
+        "nome_formato": "Pão na Air Fryer",
+        "peso_porcao_g": 80,
+        "qtd_padrao": 6,
+        "hidratacao_pct": 60,
+        "sal_pct": 2.0,
+        "tipo_fermento": "Seco",
+        "integral_pct": 0,
+        "acucar_pct": 5.0,
+        "gordura_pct": 6.0,
+        "ovos_pct": 0.0,
+        "metodo": "air_fryer",
+        "descricao": "Pãezinhos macios que assam em 12 a 15 minutos direto na cesta da Air Fryer.",
+    },
+    "liquidificador": {
+        "titulo": "⚡ Pão de Liquidificador (De Forma)",
+        "categoria": "Pão Fácil",
+        "nome_formato": "Pão de Liquidificador",
+        "peso_porcao_g": 650,
+        "qtd_padrao": 1,
+        "hidratacao_pct": 75,
+        "sal_pct": 1.8,
+        "tipo_fermento": "Seco",
+        "integral_pct": 0,
+        "acucar_pct": 6.0,
+        "gordura_pct": 10.0,
+        "ovos_pct": 12.0,
+        "metodo": "liquidificador",
+        "descricao": "Massa mole batida no liquidificador e despejada direto na forma de bolo inglês.",
+    },
+    "frigideira": {
+        "titulo": "🍳 Pão de Frigideira (Sem Forno)",
+        "categoria": "Pão Fácil",
+        "nome_formato": "Pão de Frigideira",
+        "peso_porcao_g": 90,
+        "qtd_padrao": 6,
+        "hidratacao_pct": 62,
+        "sal_pct": 2.0,
+        "tipo_fermento": "Seco",
+        "integral_pct": 0,
+        "acucar_pct": 3.0,
+        "gordura_pct": 5.0,
+        "ovos_pct": 0.0,
+        "metodo": "frigideira",
+        "descricao": "Pronto em minutos na frigideira tampada em fogo baixo. Ideal para lanches rápidos.",
+    },
+    "integral_100": {
+        "titulo": "🌾 Pão 100% Integral Macio",
+        "categoria": "Integrais",
         "nome_formato": "Pão 100% Integral",
         "peso_porcao_g": 550,
         "qtd_padrao": 2,
@@ -211,11 +273,13 @@ RECEITAS_PRONTAS = {
         "integral_pct": 100,
         "acucar_pct": 5.0,
         "gordura_pct": 6.0,
-        "leite_po_pct": 0.0,
         "ovos_pct": 0.0,
+        "metodo": "macio",
         "descricao": "Feito apenas com farinha integral e hidratação ajustada para não ficar seco.",
     },
-    "🌾 Pão Meio Integral 50/50 (2 pães)": {
+    "meio_integral": {
+        "titulo": "🌾 Pão Meio Integral (50/50)",
+        "categoria": "Integrais",
         "nome_formato": "Pão Meio Integral (50/50)",
         "peso_porcao_g": 550,
         "qtd_padrao": 2,
@@ -225,11 +289,29 @@ RECEITAS_PRONTAS = {
         "integral_pct": 50,
         "acucar_pct": 5.0,
         "gordura_pct": 5.0,
-        "leite_po_pct": 2.0,
         "ovos_pct": 0.0,
+        "metodo": "macio",
         "descricao": "Equilíbrio perfeito entre leveza da farinha branca e fibras da integral.",
     },
-    "🌭 Pão de Cachorro-Quente (15 unidades)": {
+    "pao_doce": {
+        "titulo": "🍩 Pão Doce Macio (Trança / Rosca)",
+        "categoria": "Clássicos",
+        "nome_formato": "Pão Doce Macio",
+        "peso_porcao_g": 80,
+        "qtd_padrao": 12,
+        "hidratacao_pct": 55,
+        "sal_pct": 1.5,
+        "tipo_fermento": "Seco",
+        "integral_pct": 0,
+        "acucar_pct": 16.0,
+        "gordura_pct": 12.0,
+        "ovos_pct": 12.0,
+        "metodo": "macio",
+        "descricao": "Massa bem fofa e adocicada, perfeita para roscas, tranças ou pão com coco.",
+    },
+    "cachorro_quente": {
+        "titulo": "🌭 Pão de Cachorro-Quente",
+        "categoria": "Clássicos",
         "nome_formato": "Pão de Cachorro-Quente",
         "peso_porcao_g": 70,
         "qtd_padrao": 15,
@@ -239,11 +321,13 @@ RECEITAS_PRONTAS = {
         "integral_pct": 0,
         "acucar_pct": 6.0,
         "gordura_pct": 5.0,
-        "leite_po_pct": 3.0,
         "ovos_pct": 0.0,
+        "metodo": "macio",
         "descricao": "Bisnaga bem macia, ideal para hot dog artesanal.",
     },
-    "🍔 Pão de Hambúrguer / Brioche (12 unidades)": {
+    "hamburguer": {
+        "titulo": "🍔 Pão de Hambúrguer / Brioche",
+        "categoria": "Clássicos",
         "nome_formato": "Pão de Hambúrguer / Brioche",
         "peso_porcao_g": 90,
         "qtd_padrao": 12,
@@ -253,11 +337,13 @@ RECEITAS_PRONTAS = {
         "integral_pct": 0,
         "acucar_pct": 10.0,
         "gordura_pct": 14.0,
-        "leite_po_pct": 4.0,
         "ovos_pct": 10.0,
+        "metodo": "macio",
         "descricao": "Miolo amanteigado e estrutura firme para segurar o hambúrguer.",
     },
-    "🥖 Pão Rústico / Italiano (2 pães)": {
+    "rustico": {
+        "titulo": "🥖 Pão Rústico / Italiano",
+        "categoria": "Artesanais",
         "nome_formato": "Pão Rústico / Campagne",
         "peso_porcao_g": 700,
         "qtd_padrao": 2,
@@ -267,11 +353,13 @@ RECEITAS_PRONTAS = {
         "integral_pct": 15,
         "acucar_pct": 0.0,
         "gordura_pct": 0.0,
-        "leite_po_pct": 0.0,
         "ovos_pct": 0.0,
+        "metodo": "rustico",
         "descricao": "Casca crocante e miolo aberto, com toque de 15% de farinha integral.",
     },
-    "🫒 Focaccia de Alecrim (2 formas)": {
+    "focaccia": {
+        "titulo": "🫒 Focaccia de Alecrim",
+        "categoria": "Artesanais",
         "nome_formato": "Focaccia Individual",
         "peso_porcao_g": 450,
         "qtd_padrao": 2,
@@ -281,14 +369,96 @@ RECEITAS_PRONTAS = {
         "integral_pct": 0,
         "acucar_pct": 0.0,
         "gordura_pct": 6.0,
-        "leite_po_pct": 0.0,
         "ovos_pct": 0.0,
-        "descricao": "Massa alta hidratação com azeite, covinhas, sal grosso e alecrim.",
+        "metodo": "focaccia",
+        "descricao": "Massa de alta hidratação com azeite, covinhas, sal grosso e alecrim.",
     },
 }
 
 # ==========================================
-# 3. FUNÇÕES AUXILIARES
+# 3. ILUSTRAÇÕES VISUAIS DO SOS PADEIRO
+# ==========================================
+def renderizar_modelo_sos(chave: str, diretorio_base: str):
+    for ext in ["jpg", "jpeg", "png"]:
+        caminho_foto = os.path.join(diretorio_base, "imagens_sos", f"{chave}.{ext}")
+        if os.path.exists(caminho_foto):
+            st.image(caminho_foto, use_container_width=True)
+            return
+
+    svgs = {
+        "mole": (
+            '<svg viewBox="0 0 420 135" width="100%" xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="5" y="5" width="195" height="125" rx="10" fill="#FDF2F2" stroke="#E57373"/>'
+            '<text x="102" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">❌ Massa Mole / Espalhada</text>'
+            '<ellipse cx="102" cy="98" rx="72" ry="18" fill="#F3E5AB" stroke="#C8A96A" stroke-width="2"/>'
+            '<path d="M50 96 Q75 82 105 95 T155 96" fill="none" stroke="#D4B475" stroke-width="2"/>'
+            '<text x="102" y="122" text-anchor="middle" font-size="10" fill="#7A634E">Escorre na bancada e gruda demais</text>'
+            '<rect x="220" y="5" width="195" height="125" rx="10" fill="#F1F8F4" stroke="#66BB6A"/>'
+            '<text x="317" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">✅ Ponto Ideal (Lisa e Firme)</text>'
+            '<path d="M262 105 C262 58 372 58 372 105 Z" fill="#F3E5AB" stroke="#C8A96A" stroke-width="2"/>'
+            '<text x="317" y="122" text-anchor="middle" font-size="10" fill="#2E5A44">Segura o formato arredondado</text>'
+            '</svg>'
+        ),
+        "pesado": (
+            '<svg viewBox="0 0 420 135" width="100%" xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="5" y="5" width="195" height="125" rx="10" fill="#FDF2F2" stroke="#E57373"/>'
+            '<text x="102" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">❌ Miolo Pesado / Fechado</text>'
+            '<path d="M40 105 C40 72 164 72 164 105 Z" fill="#DFC896" stroke="#8C4A27" stroke-width="3"/>'
+            '<rect x="46" y="94" width="112" height="9" fill="#BFA36F" rx="3"/>'
+            '<text x="102" y="122" text-anchor="middle" font-size="10" fill="#7A634E">Baixo, denso e faixa embatumada</text>'
+            '<rect x="220" y="5" width="195" height="125" rx="10" fill="#F1F8F4" stroke="#66BB6A"/>'
+            '<text x="317" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">✅ Miolo Aerado e Leve</text>'
+            '<path d="M255 105 C255 42 379 42 379 105 Z" fill="#FAF0D7" stroke="#A65E2E" stroke-width="3"/>'
+            '<circle cx="290" cy="82" r="5" fill="#E6D2A8"/><circle cx="318" cy="70" r="6" fill="#E6D2A8"/>'
+            '<circle cx="342" cy="85" r="5" fill="#E6D2A8"/><circle cx="308" cy="92" r="4" fill="#E6D2A8"/>'
+            '<text x="317" y="122" text-anchor="middle" font-size="10" fill="#2E5A44">Alto, macio e com alvéolos</text>'
+            '</svg>'
+        ),
+        "rachado": (
+            '<svg viewBox="0 0 420 135" width="100%" xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="5" y="5" width="195" height="125" rx="10" fill="#FDF2F2" stroke="#E57373"/>'
+            '<text x="102" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">❌ Estouro na Lateral</text>'
+            '<path d="M40 105 C40 48 164 48 164 105 Z" fill="#C87D32" stroke="#7A4419" stroke-width="2"/>'
+            '<path d="M135 88 L162 82 L154 96 L168 95" fill="none" stroke="#FFF3D6" stroke-width="4"/>'
+            '<text x="102" y="122" text-anchor="middle" font-size="10" fill="#7A634E">Rasgou na lateral (pouca fermentação)</text>'
+            '<rect x="220" y="5" width="195" height="125" rx="10" fill="#F1F8F4" stroke="#66BB6A"/>'
+            '<text x="317" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">✅ Abertura no Corte (Pestana)</text>'
+            '<path d="M255 105 C255 46 379 46 379 105 Z" fill="#C87D32" stroke="#7A4419" stroke-width="2"/>'
+            '<path d="M292 60 Q318 44 345 62" fill="none" stroke="#FFF3D6" stroke-width="5" stroke-linecap="round"/>'
+            '<text x="317" y="122" text-anchor="middle" font-size="10" fill="#2E5A44">Expansão controlada no topo</text>'
+            '</svg>'
+        ),
+        "murchou": (
+            '<svg viewBox="0 0 420 135" width="100%" xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="5" y="5" width="195" height="125" rx="10" fill="#FDF2F2" stroke="#E57373"/>'
+            '<text x="102" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">❌ Afundou no Meio</text>'
+            '<path d="M40 105 L45 65 Q102 86 159 65 L164 105 Z" fill="#C87D32" stroke="#7A4419" stroke-width="2"/>'
+            '<text x="102" y="122" text-anchor="middle" font-size="10" fill="#7A634E">Passou do ponto (superfermentou)</text>'
+            '<rect x="220" y="5" width="195" height="125" rx="10" fill="#F1F8F4" stroke="#66BB6A"/>'
+            '<text x="317" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">✅ Topo Arredondado Firme</text>'
+            '<path d="M255 105 C255 42 379 42 379 105 Z" fill="#C87D32" stroke="#7A4419" stroke-width="2"/>'
+            '<text x="317" y="122" text-anchor="middle" font-size="10" fill="#2E5A44">Assado no ponto exato do dedo</text>'
+            '</svg>'
+        ),
+        "palida": (
+            '<svg viewBox="0 0 420 135" width="100%" xmlns="http://www.w3.org/2000/svg">'
+            '<rect x="5" y="5" width="195" height="125" rx="10" fill="#FDF2F2" stroke="#E57373"/>'
+            '<text x="102" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">❌ Casca Pálida e Opaca</text>'
+            '<path d="M40 105 C40 48 164 48 164 105 Z" fill="#EFE4C8" stroke="#CBB994" stroke-width="2"/>'
+            '<text x="102" y="122" text-anchor="middle" font-size="10" fill="#7A634E">Forno frio ou sem vapor/pincelada</text>'
+            '<rect x="220" y="5" width="195" height="125" rx="10" fill="#F1F8F4" stroke="#66BB6A"/>'
+            '<text x="317" y="24" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">✅ Casca Dourada Caramelizada</text>'
+            '<path d="M255 105 C255 48 379 48 379 105 Z" fill="#B96A24" stroke="#6E3B10" stroke-width="2"/>'
+            '<text x="317" y="122" text-anchor="middle" font-size="10" fill="#2E5A44">Forno bem preaquecido</text>'
+            '</svg>'
+        ),
+    }
+    svg_html = svgs.get(chave, "")
+    if svg_html:
+        st.markdown(f'<div class="sos-visual-box">{svg_html}</div>', unsafe_allow_html=True)
+
+# ==========================================
+# 4. FUNÇÕES AUXILIARES
 # ==========================================
 def obter_secret(chave: str, padrao=""):
     try:
@@ -330,7 +500,6 @@ def converter_medida_caseira(gramas: float, tipo: str) -> str:
         "sal": (5.0, "col. chá"),
         "acucar": (12.0, "col. sopa"),
         "gordura": (15.0, "col. sopa"),
-        "leite_po": (10.0, "col. sopa"),
         "fermento_seco": (10.0, "col. sopa"),
         "fermento_fresco": (15.0, "tab."),
         "levain": (240.0, "xíc."),
@@ -340,7 +509,9 @@ def converter_medida_caseira(gramas: float, tipo: str) -> str:
         return f"{formatar_fracao(gramas / div)} {un}"
     return f"{gramas} g"
 
-def classificar_massa(nome_formato: str, receita: dict, contem_gluten: bool) -> str:
+def classificar_massa(nome_formato: str, receita: dict, contem_gluten: bool, metodo_forcado: str = "") -> str:
+    if metodo_forcado:
+        return metodo_forcado
     formato_lower = str(nome_formato).lower()
     if not contem_gluten:
         return "sem_gluten"
@@ -350,16 +521,48 @@ def classificar_massa(nome_formato: str, receita: dict, contem_gluten: bool) -> 
         return "rustico"
     return "macio"
 
-def gerar_modo_preparo(nome_formato: str, receita: dict, contem_gluten: bool, integral_pct: int = 0) -> list:
+def gerar_modo_preparo(nome_formato: str, receita: dict, contem_gluten: bool, integral_pct: int = 0, metodo_forcado: str = "") -> list:
     temp_agua = receita.get("temp_agua_c", 22)
     peso_un = receita.get("peso_porcao_g", 0)
     qtd_un = receita.get("qtd_unidades", 1)
-    tipo_massa = classificar_massa(nome_formato, receita, contem_gluten)
+    tipo_massa = classificar_massa(nome_formato, receita, contem_gluten, metodo_forcado)
 
     dica_integral = ""
     if integral_pct >= 50:
         dica_integral = " (Dica integral: deixe descansar 20 min após misturar a água para o farelo hidratar bem.)"
 
+    if tipo_massa == "sem_sova":
+        return [
+            f"1. **Mistura na Tigela:** Misture todos os ingredientes com uma colher de pau usando água a {temp_agua} °C até não sobrar farinha seca. A massa fica úmida e rústica.",
+            "2. **Descanso Longo:** Cubra bem com plástico filme e deixe crescer de 2 a 3 horas em temperatura ambiente (ou 8h na geladeira).",
+            "3. **Modelagem Leve:** Polvilhe farinha na bancada, despeje a massa sem apertar demais, dobre as pontas para o centro formando uma bola.",
+            "4. **Segunda Fermentação:** Deixe descansar 30 minutos sobre papel manteiga enquanto o forno preaquece a 230 °C.",
+            "5. **Forno:** Asse a 230 °C por 30 a 35 minutos (se tiver panela de ferro tampada, asse 20 min tampado e 15 min destampado).",
+        ]
+    if tipo_massa == "air_fryer":
+        return [
+            f"1. **Mistura e Sova Rápida:** Misture a farinha, fermento, açúcar, sal, água ({temp_agua} °C) e manteiga/óleo. Sove 6 minutos até ficar lisa.",
+            "2. **Crescimento:** Cubra e deixe descansar por 30 a 40 minutos.",
+            f"3. **Modelagem:** Divida em {qtd_un} bolinhas de {peso_un}g e deixe descansar mais 20 minutos.",
+            "4. **Preaquecer Air Fryer:** Preaqueça a Air Fryer a 160 °C por 3 minutos.",
+            "5. **Assar:** Coloque os pãezinhos com espaço entre eles (forre com papel manteiga furado se desejar) e asse a 160 °C por 12 a 15 minutos até dourar.",
+        ]
+    if tipo_massa == "liquidificador":
+        return [
+            f"1. **Bater Líquidos:** No liquidificador, bata a água ({temp_agua} °C), ovos, óleo/manteiga, açúcar, sal e o fermento por 1 minuto.",
+            "2. **Misturar a Farinha:** Despeje o líquido em uma tigela e misture a farinha aos poucos com uma colher até ficar uma massa mole e homogênea (ponto de bolo grosso).",
+            "3. **Forma Untada:** Despeje na forma de pão untada e enfarinhada (preencha até metade da altura).",
+            "4. **Crescimento:** Cubra e deixe crescer por 35 a 45 minutos até chegar perto da borda.",
+            "5. **Forno:** Asse em forno preaquecido a 180 °C por 30 a 35 minutos até dourar e passar no teste do palito.",
+        ]
+    if tipo_massa == "frigideira":
+        return [
+            f"1. **Mistura:** Misture a farinha, fermento, açúcar, sal, água ({temp_agua} °C) e óleo. Sove por 5 minutos até ficar macia.",
+            "2. **Descanso:** Cubra e deixe descansar por 25 minutos.",
+            f"3. **Abrir Discos:** Divida em {qtd_un} porções de {peso_un}g e abra em discos de cerca de 1 cm de espessura.",
+            "4. **Frigideira Tampada:** Aqueça uma frigideira antiaderente em fogo bem baixo (untada com um fio de óleo). Coloque o disco e tampe.",
+            "5. **Virar:** Deixe 4 a 5 minutos de cada lado até dourar e assar por dentro.",
+        ]
     if tipo_massa == "sem_gluten":
         return [
             "1. **Mistura Seca:** Misture a farinha sem glúten, goma xantana, sal, fermento e secos.",
@@ -385,35 +588,40 @@ def gerar_modo_preparo(nome_formato: str, receita: dict, contem_gluten: bool, in
             "5. **Forno com Vapor:** Preaqueça a 240 °C com assadeira vazia embaixo. Faça o corte e use vapor nos primeiros 15 min. Asse por 25-35 min.",
         ]
     return [
-        f"1. **Mistura Inicial:** Misture a(s) farinha(s), fermento, açúcar e leite em pó. Junte água (a {temp_agua} °C) e ovos aos poucos.{dica_integral}",
-        "2. **Sova e Ponto de Véu:** Sove por 8 a 10 min. Adicione o sal e, por último, a manteiga em pomada até ficar lisa.",
+        f"1. **Mistura Inicial:** Misture a(s) farinha(s), o fermento e o açúcar. Junte a água (a {temp_agua} °C) e os ovos aos poucos.{dica_integral}",
+        "2. **Sova e Ponto de Véu:** Sove por 8 a 10 min. Adicione o sal e, por último, a manteiga em pomada até a massa ficar lisa.",
         "3. **Primeira Fermentação:** Cubra a massa e deixe descansar por 40 a 60 min até dobrar de volume.",
         f"4. **Divisão e Modelagem:** Divida em {qtd_un} un. de {peso_un}g, boleie, descanse 10 min e modele ({nome_formato}).",
         "5. **Segunda Fermentação e Forno:** Deixe dobrar na assadeira (35-50 min). Asse a 180 °C por 18-25 min (pequenos) ou 30-35 min (grandes).",
     ]
 
-def gerar_cronograma_reverso(hora_pronto: datetime.time, nome_formato: str, receita: dict, contem_gluten: bool) -> list:
-    tipo_massa = classificar_massa(nome_formato, receita, contem_gluten)
+def gerar_cronograma_reverso(hora_pronto: datetime.time, nome_formato: str, receita: dict, contem_gluten: bool, metodo_forcado: str = "") -> list:
+    tipo_massa = classificar_massa(nome_formato, receita, contem_gluten, metodo_forcado)
     base_dt = datetime.datetime.combine(datetime.date.today(), hora_pronto)
 
-    if tipo_massa == "sem_gluten":
+    if tipo_massa in ["air_fryer", "frigideira"]:
         etapas_min = [
-            (95, "🥣 Pesagem e mistura na batedeira"),
-            (85, "🍞 Transferir para a forma untada"),
-            (40, "🔥 Preaquecer forno a 190 °C"),
-            (35, "⏲️ Colocar no forno"),
-            (0, "✅ Pão pronto! Esfriar na grade"),
+            (75, "🥣 Mistura e sova rápida"),
+            (65, "⏳ Descanso da massa"),
+            (35, "✂️ Divisão e modelagem"),
+            (15, "🔥 Assar na Air Fryer / Frigideira"),
+            (0, "✅ Pães quentinhos prontos!"),
         ]
-    elif tipo_massa == "focaccia":
+    elif tipo_massa == "liquidificador":
         etapas_min = [
-            (195, "🥣 Mistura inicial e descanso (15 min)"),
-            (180, "🧂 Incorporar sal/azeite e 1ª dobra"),
-            (150, "🔄 2ª dobra (Stretch & Fold)"),
-            (120, "🔄 3ª dobra (Stretch & Fold)"),
-            (90, "🫒 Transferir para forma untada com azeite"),
-            (40, "🔥 Preaquecer forno a 220 °C"),
-            (25, "✨ Covinhas, sal grosso/alecrim e forno"),
-            (0, "✅ Focaccia dourada e pronta!"),
+            (90, "⚡ Bater líquidos no liquidificador e misturar farinha"),
+            (80, "🍞 Despejar na forma untada e cobrir"),
+            (40, "🔥 Preaquecer forno a 180 °C"),
+            (35, "⏲️ Levar ao forno"),
+            (0, "✅ Pão pronto!"),
+        ]
+    elif tipo_massa == "sem_sova":
+        etapas_min = [
+            (215, "🥣 Misturar tudo na tigela com colher"),
+            (65, "✂️ Modelar bola na bancada enfarinhada"),
+            (45, "🔥 Preaquecer forno a 230 °C"),
+            (35, "⏲️ Levar ao forno"),
+            (0, "✅ Pão crocante pronto!"),
         ]
     elif tipo_massa == "rustico":
         etapas_min = [
@@ -434,7 +642,7 @@ def gerar_cronograma_reverso(hora_pronto: datetime.time, nome_formato: str, rece
             (85, "✂️ Divisão, boleamento e modelagem"),
             (70, "⏳ Início da 2ª fermentação na assadeira"),
             (40, "🔥 Preaquecer forno a 180 °C"),
-            (25, "🥚 Pincelar gema/leite e levar ao forno"),
+            (25, "🥚 Pincelar gema e levar ao forno"),
             (0, "✅ Fornada pronta!"),
         ]
 
@@ -448,16 +656,15 @@ def calcular_tabela_nutricional(receita: dict) -> dict:
     farinha = float(receita.get("farinha_g", 0) or 0)
     acucar = float(receita.get("acucar_g", 0) or 0)
     gordura = float(receita.get("gordura_g", 0) or 0)
-    leite_po = float(receita.get("leite_po_g", 0) or 0)
     ovos = float(receita.get("ovos_g", 0) or 0)
     sal = float(receita.get("sal_g", 0) or 0)
     fermento = float(receita.get("fermento_g", 0) or 0)
 
-    kcal = farinha * 3.60 + acucar * 3.87 + gordura * 7.17 + leite_po * 4.96 + ovos * 1.43 + fermento * 2.95
-    carb = farinha * 0.75 + acucar * 1.00 + leite_po * 0.38 + ovos * 0.01 + fermento * 0.38
-    prot = farinha * 0.11 + gordura * 0.01 + leite_po * 0.26 + ovos * 0.13 + fermento * 0.38
-    gord = farinha * 0.014 + gordura * 0.81 + leite_po * 0.27 + ovos * 0.095 + fermento * 0.04
-    sodio_mg = sal * 388.0 + leite_po * 3.7 + ovos * 1.4
+    kcal = farinha * 3.60 + acucar * 3.87 + gordura * 7.17 + ovos * 1.43 + fermento * 2.95
+    carb = farinha * 0.75 + acucar * 1.00 + ovos * 0.01 + fermento * 0.38
+    prot = farinha * 0.11 + gordura * 0.01 + ovos * 0.13 + fermento * 0.38
+    gord = farinha * 0.014 + gordura * 0.81 + ovos * 0.095 + fermento * 0.04
+    sodio_mg = sal * 388.0 + ovos * 1.4
 
     qtd_un = int(receita.get("qtd_unidades", 1) or 1)
     peso_un = float(receita.get("peso_porcao_g", 0) or 0)
@@ -511,8 +718,6 @@ def montar_texto_whatsapp(dados_ia: dict, receita: dict, usar_caseira: bool, cha
         linhas.append(f"• Açúcar: {fmt(receita.get('acucar_g', 0), 'acucar')}")
     if (receita.get("gordura_g", 0) or 0) > 0:
         linhas.append(f"• Manteiga/Gordura: {fmt(receita.get('gordura_g', 0), 'gordura')}")
-    if (receita.get("leite_po_g", 0) or 0) > 0:
-        linhas.append(f"• Leite em Pó: {fmt(receita.get('leite_po_g', 0), 'leite_po')}")
     if (receita.get("ovos_g", 0) or 0) > 0:
         linhas.append(f"• Ovos: {receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)")
     if not dados_ia.get("contem_gluten", True) and "goma_xantana_g" in receita:
@@ -526,7 +731,7 @@ def montar_texto_whatsapp(dados_ia: dict, receita: dict, usar_caseira: bool, cha
     return "\n".join(linhas)
 
 # ==========================================
-# 4. IA / LEITOR DE RÓTULOS
+# 5. IA / LEITOR DE RÓTULOS & FIREBASE
 # ==========================================
 class RotuloFarinha(BaseModel):
     marca: str = Field(description="Nome comercial ou fabricante da farinha")
@@ -538,7 +743,6 @@ class RotuloFarinha(BaseModel):
 def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
     if not chave_api_val:
         return {"erro": "Chave da API Gemini não configurada no servidor."}
-
     client = genai.Client(api_key=chave_api_val)
     prompt = "Analise o rótulo/tabela nutricional desta farinha. Extraia marca, proteína por 50g, força, hidratação mínima e contem_gluten."
     configuracao = types.GenerateContentConfig(
@@ -546,7 +750,6 @@ def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
         response_schema=RotuloFarinha,
         temperature=0.1,
     )
-
     for modelo in ["gemini-2.5-flash", "gemini-2.0-flash"]:
         try:
             response = client.models.generate_content(model=modelo, contents=[prompt, img], config=configuracao)
@@ -555,9 +758,6 @@ def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
             continue
     return {"erro": "Falha na análise com a IA Gemini."}
 
-# ==========================================
-# 5. FIREBASE, ACESSO PRO & LOGO
-# ==========================================
 if not firebase_admin._apps:
     caminho_cred = os.path.join(os.path.dirname(__file__), "firebase_key.json")
     try:
@@ -612,7 +812,63 @@ logo_b64 = obter_base64_da_imagem(caminho_logo) if caminho_logo else None
 chave_api = obter_secret("GEMINI_API_KEY", "")
 
 # ==========================================
-# 6. CABEÇALHO & BARRA LATERAL
+# 6. ESTADO DE NAVEGAÇÃO & GERADOR DE PRESET
+# ==========================================
+if "pagina_atual" not in st.session_state:
+    st.session_state["pagina_atual"] = "receita_pronta"
+if "receita_id_atual" not in st.session_state:
+    st.session_state["receita_id_atual"] = "meu_primeiro_pao"
+
+c_farinha = st.session_state.get("c_farinha", 5.50)
+c_fermento = st.session_state.get("c_fermento", 35.0)
+c_acucar = st.session_state.get("c_acucar", 4.50)
+c_sal = st.session_state.get("c_sal", 3.0)
+c_gordura = st.session_state.get("c_gordura", 18.0)
+c_ovo_unidade = st.session_state.get("c_ovo_unidade", 0.75)
+margem_lucro = st.session_state.get("margem_lucro", 100.0)
+
+def gerar_receita_preset(receita_id: str, qtd_override: int = None, temp_amb: float = 24.0):
+    preset = RECEITAS_PRONTAS[receita_id]
+    qtd = qtd_override if qtd_override is not None else preset["qtd_padrao"]
+    peso_total_preset = int(qtd * preset["peso_porcao_g"])
+    dados_preset = {
+        "marca": f"Receita Padrão ({preset['nome_formato']})",
+        "proteina_g_por_50g": 6.0,
+        "forca_estimada": "Padrão",
+        "hidratacao_minima": preset["hidratacao_pct"],
+        "contem_gluten": True,
+    }
+    calc_p = CalculadoraPanificacao(
+        peso_total_massa=peso_total_preset,
+        hidratacao_pct=preset["hidratacao_pct"],
+        sal_pct=preset["sal_pct"],
+        tipo_fermento=preset["tipo_fermento"],
+        temp_ambiente=temp_amb,
+        contem_gluten=True,
+        peso_porcao_g=preset["peso_porcao_g"],
+        nome_formato=preset["nome_formato"],
+        acucar_pct=preset["acucar_pct"],
+        gordura_pct=preset["gordura_pct"],
+        leite_po_pct=0.0,
+        ovos_pct=preset["ovos_pct"],
+        custo_farinha_kg=c_farinha,
+        custo_fermento_kg=c_fermento,
+        custo_acucar_kg=c_acucar,
+        custo_gordura_kg=c_gordura,
+        custo_leite_po_kg=0.0,
+        custo_ovo_unidade=c_ovo_unidade,
+        custo_sal_kg=c_sal,
+        margem_lucro_pct=margem_lucro,
+    )
+    st.session_state["resultado_atual"] = {
+        "dados_ia": dados_preset,
+        "receita": calc_p.calcular(),
+        "integral_pct": preset["integral_pct"],
+        "metodo": preset.get("metodo", "macio"),
+    }
+
+# ==========================================
+# 7. BANNER & MEGA-MENU SUPERIOR (ESTILO FLEISCHMANN)
 # ==========================================
 if logo_b64:
     logo_html = '<img src="data:image/png;base64,' + logo_b64 + '" style="width: 100%; height: 100%; object-fit: contain;">'
@@ -621,14 +877,84 @@ else:
 
 banner_html = (
     '<div id="banner-topo">'
-    f'<div style="width: 80px; height: 80px; flex-shrink: 0;">{logo_html}</div>'
+    f'<div style="width: 78px; height: 78px; flex-shrink: 0;">{logo_html}</div>'
     '<div>'
     '<div class="titulo-principal">Massa Tradicional</div>'
-    '<div class="subtitulo-principal">Painel Profissional de Panificação & B2B Intelligence</div>'
+    '<div class="subtitulo-principal">Receitas Prontas, Calculadora Profissional & B2B Intelligence</div>'
     '</div></div>'
 )
 st.markdown(banner_html, unsafe_allow_html=True)
 
+nav1, nav2, nav3, nav4 = st.columns(4)
+
+with nav1:
+    with st.popover("🍞 Receitas Prontas", use_container_width=True):
+        mc1, mc2, mc3 = st.columns(3)
+        with mc1:
+            st.markdown("**⚡ Pão Fácil**")
+            for rid in ["meu_primeiro_pao", "sem_sova", "air_fryer", "liquidificador", "frigideira"]:
+                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
+                    st.session_state["pagina_atual"] = "receita_pronta"
+                    st.session_state["receita_id_atual"] = rid
+                    gerar_receita_preset(rid)
+                    st.rerun()
+        with mc2:
+            st.markdown("**🌾 Integrais & Clássicos**")
+            for rid in ["integral_100", "meio_integral", "pao_doce", "cachorro_quente", "hamburguer"]:
+                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
+                    st.session_state["pagina_atual"] = "receita_pronta"
+                    st.session_state["receita_id_atual"] = rid
+                    gerar_receita_preset(rid)
+                    st.rerun()
+        with mc3:
+            st.markdown("**🥖 Artesanais**")
+            for rid in ["rustico", "focaccia"]:
+                if st.button(RECEITAS_PRONTAS[rid]["titulo"], key=f"nav_{rid}", use_container_width=True):
+                    st.session_state["pagina_atual"] = "receita_pronta"
+                    st.session_state["receita_id_atual"] = rid
+                    gerar_receita_preset(rid)
+                    st.rerun()
+
+with nav2:
+    with st.popover("🛠️ Faça Você Mesmo", use_container_width=True):
+        st.markdown("**Monte sua receita do zero**")
+        if st.button("🚀 Calculadora Avançada & Scanner IA", key="nav_calc", use_container_width=True):
+            st.session_state["pagina_atual"] = "calculadora"
+            st.rerun()
+        if st.button("🧈 Enriquecimento (Açúcar / Manteiga / Ovos)", key="nav_extra", use_container_width=True):
+            st.session_state["pagina_atual"] = "enriquecimento"
+            st.rerun()
+        if st.button("💰 Tabela de Custos & Precificação", key="nav_custos", use_container_width=True):
+            st.session_state["pagina_atual"] = "custos"
+            st.rerun()
+
+with nav3:
+    with st.popover("📚 Escola & SOS Padeiro", use_container_width=True):
+        ec1, ec2 = st.columns(2)
+        with ec1:
+            st.markdown("**📖 Aprenda o Básico**")
+            if st.button("🦠 Diferenças de Fermentos", key="nav_escola_ferm", use_container_width=True):
+                st.session_state["pagina_atual"] = "escola"
+                st.rerun()
+            if st.button("🙌 Como Sovar & Ponto de Véu", key="nav_escola_sova", use_container_width=True):
+                st.session_state["pagina_atual"] = "escola"
+                st.rerun()
+        with ec2:
+            st.markdown("**🆘 SOS Visual**")
+            if st.button("🔍 Abrir Diagnóstico Visual de Pães", key="nav_sos", use_container_width=True):
+                st.session_state["pagina_atual"] = "sos"
+                st.rerun()
+
+with nav4:
+    with st.popover("📊 B2B & PRO", use_container_width=True):
+        st.markdown("**Gestão & Assinatura**")
+        if st.button("📊 Telemetria B2B (Firebase)", key="nav_b2b", use_container_width=True):
+            st.session_state["pagina_atual"] = "b2b"
+            st.rerun()
+
+# ==========================================
+# 8. BARRA LATERAL CONTEXTUAL
+# ==========================================
 FORMATOS_PADARIA = {
     "Pão de Cachorro-Quente (70g)": 70,
     "Pão de Hambúrguer / Brioche (90g)": 90,
@@ -646,6 +972,63 @@ with st.sidebar:
     if caminho_logo:
         st.image(caminho_logo, width=65)
 
+    pagina = st.session_state["pagina_atual"]
+
+    if pagina == "receita_pronta":
+        rid_atual = st.session_state["receita_id_atual"]
+        preset_atual = RECEITAS_PRONTAS[rid_atual]
+        st.markdown("### ⚡ Ajuste Rápido")
+        st.caption(f"Receita ativa: **{preset_atual['nome_formato']}**")
+        qtd_pronta = st.number_input("Quantas unidades?", min_value=1, max_value=100, value=preset_atual["qtd_padrao"], step=1)
+        temp_ambiente = st.number_input("Temp. Ambiente (°C)", min_value=10.0, max_value=40.0, value=24.0, step=0.5)
+        if st.button("🔄 Atualizar Quantidade", use_container_width=True):
+            gerar_receita_preset(rid_atual, qtd_pronta, temp_ambiente)
+    elif pagina in ["calculadora", "enriquecimento", "custos"]:
+        st.markdown("### 🥖 Planejamento Avançado")
+        opcoes_modo = [
+            "Pelo Peso Total da Massa (g)",
+            "Pela Quantidade de Pães",
+            "Por Farinha Disponível (Estoque)",
+        ]
+        modo_planeamento = st.radio("Modo de Cálculo:", opcoes_modo)
+        formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
+        peso_padrao = FORMATOS_PADARIA[formato_escolhido]
+
+        if peso_padrao == 0:
+            peso_porcao_g = st.number_input("Peso por unidade (g)", min_value=20, max_value=3000, value=100, step=5)
+            nome_formato = "Porção Personalizada"
+        elif peso_padrao == -1:
+            peso_porcao_g = 0
+            nome_formato = "Peça Única"
+        else:
+            peso_porcao_g = peso_padrao
+            nome_formato = formato_escolhido.split(" (")[0]
+
+        if modo_planeamento == "Pelo Peso Total da Massa (g)":
+            peso_desejado = st.slider("Peso Total (g)", 500, 15000, 3500, 100)
+        elif modo_planeamento == "Pela Quantidade de Pães":
+            if peso_porcao_g <= 0:
+                peso_porcao_g = 70
+            qtd_encomenda = st.number_input("Quantidade de Pães", min_value=1, max_value=500, value=50, step=1)
+            peso_desejado = int(qtd_encomenda * peso_porcao_g)
+            st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
+        else:
+            farinha_disponivel_g = st.number_input("Farinha Disponível (g)", min_value=100, max_value=50000, value=1000, step=100)
+            peso_desejado = int(farinha_disponivel_g * 1.65)
+            st.info(f"🌾 **Estoque Farinha:** {farinha_disponivel_g}g")
+
+        default_integral = 50 if "Integral" in formato_escolhido else 0
+        farinha_integral_pct = st.slider("Farinha Integral (%)", 0, 100, default_integral, 10)
+        tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
+        fermento_limpo = tipo_fermento.split(" ")[0]
+        sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
+        temp_ambiente = st.number_input("Temp. Ambiente (°C)", min_value=10.0, max_value=40.0, value=24.0, step=0.5)
+    else:
+        st.markdown("### 🌾 Massa Tradicional")
+        st.caption("Use o menu superior para escolher uma receita pronta ou montar a sua.")
+        temp_ambiente = 24.0
+
+    st.markdown("---")
     st.markdown("### 🔑 Acesso PRO")
     credencial_pro = st.text_input("E-mail ou Chave PRO", placeholder="seu@email.com")
     usuario_pro = verificar_acesso_pro(credencial_pro)
@@ -654,72 +1037,31 @@ with st.sidebar:
     elif usuario_pro:
         st.success("✅ Plano PRO Ativo")
     else:
-        st.warning("🔒 Modo Gratuito (Scanner IA, PDF e Custos bloqueados)")
-
-    st.markdown("---")
-    st.markdown("### 🥖 Planejamento Avançado")
-    st.caption("Para receitas personalizadas:")
-
-    opcoes_modo = [
-        "Pelo Peso Total da Massa (g)",
-        "Pela Quantidade de Pães",
-        "Por Farinha Disponível (Estoque)",
-    ]
-    modo_planeamento = st.radio("Modo de Cálculo:", opcoes_modo)
-
-    formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
-    peso_padrao = FORMATOS_PADARIA[formato_escolhido]
-
-    if peso_padrao == 0:
-        peso_porcao_g = st.number_input("Peso por unidade (g)", min_value=20, max_value=3000, value=100, step=5)
-        nome_formato = "Porção Personalizada"
-    elif peso_padrao == -1:
-        peso_porcao_g = 0
-        nome_formato = "Peça Única"
-    else:
-        peso_porcao_g = peso_padrao
-        nome_formato = formato_escolhido.split(" (")[0]
-
-    if modo_planeamento == "Pelo Peso Total da Massa (g)":
-        peso_desejado = st.slider("Peso Total (g)", 500, 15000, 3500, 100)
-    elif modo_planeamento == "Pela Quantidade de Pães":
-        if peso_porcao_g <= 0:
-            peso_porcao_g = 70
-        qtd_encomenda = st.number_input("Quantidade de Pães", min_value=1, max_value=500, value=50, step=1)
-        peso_desejado = int(qtd_encomenda * peso_porcao_g)
-        st.info(f"⚖️ **Massa Total:** {peso_desejado} g")
-    else:
-        farinha_disponivel_g = st.number_input("Farinha Disponível (g)", min_value=100, max_value=50000, value=1000, step=100)
-        peso_desejado = int(farinha_disponivel_g * 1.65)
-        st.info(f"🌾 **Estoque Farinha:** {farinha_disponivel_g}g")
-
-    st.markdown("---")
-    default_integral = 50 if "Integral" in formato_escolhido else 0
-    farinha_integral_pct = st.slider("Farinha Integral (%)", 0, 100, default_integral, 10)
-    tipo_fermento = st.selectbox("Fermento", ["Seco (1%)", "Fresco (3%)", "Levain (20%)"])
-    fermento_limpo = tipo_fermento.split(" ")[0]
-    sal_pct = st.slider("Sal (%)", 1.0, 3.5, 2.0, 0.1)
-    temp_ambiente = st.number_input("Temp. Ambiente (°C)", min_value=10.0, max_value=40.0, value=24.0, step=0.5)
+        st.warning("🔒 Modo Gratuito")
 
 # ==========================================
-# 7. ABAS CENTRAIS
+# 9. CONTEÚDO PRINCIPAL POR PÁGINA
 # ==========================================
-aba_prontas, aba_calc, aba_extras, aba_custos, aba_sos, aba_b2b = st.tabs([
-    "⚡ Receitas Prontas",
-    "🚀 Calculadora & IA",
-    "🧈 Enriquecimento",
-    "💰 Custos & Preço",
-    "🆘 SOS Padeiro",
-    "📊 Telemetria B2B",
-])
+mostrar_resultado = False
+acucar_pct = st.session_state.get("acucar_pct", 5.0)
+gordura_pct = st.session_state.get("gordura_pct", 5.0)
+ovos_pct = st.session_state.get("ovos_pct", 0.0)
 
-with aba_extras:
+if pagina == "receita_pronta":
+    mostrar_resultado = True
+    rid_atual = st.session_state["receita_id_atual"]
+    preset_atual = RECEITAS_PRONTAS[rid_atual]
+    if "resultado_atual" not in st.session_state:
+        gerar_receita_preset(rid_atual, qtd_pronta, temp_ambiente)
+
     st.info(
-        "🧈 **Para que serve esta aba?**\n\n"
-        "Defina ingredientes complementares em **percentagem (%) sobre o peso da farinha**.\n"
-        "• Escolha um *Perfil Rápido* ou ajuste os controles deslizantes conforme sua receita."
+        f"**{preset_atual['titulo']}** — {preset_atual['descricao']}\n\n"
+        "💡 Quer trocar de pão? Clique em **🍞 Receitas Prontas** no menu acima. Quer mudar a quantidade? Ajuste na barra lateral à esquerda."
     )
-    st.subheader("Ingredientes de Enriquecimento (% sobre a Farinha)")
+
+elif pagina == "enriquecimento":
+    st.subheader("🧈 Enriquecimento da Massa (% sobre a Farinha)")
+    st.info("Defina açúcar, manteiga/óleo e ovos em percentagem sobre o peso da farinha.")
     opcoes_perfil = [
         "Cachorro-Quente / Forma (Macio)",
         "Hambúrguer / Brioche (Rico)",
@@ -728,134 +1070,53 @@ with aba_extras:
         "Personalizado",
     ]
     perfil = st.selectbox("Perfil Rápido", opcoes_perfil)
-
     if "Cachorro" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 6.0, 5.0, 3.0, 0.0
+        def_acucar, def_gord, def_ovos = 6.0, 5.0, 0.0
     elif "Hambúrguer" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 10.0, 15.0, 4.0, 10.0
+        def_acucar, def_gord, def_ovos = 10.0, 15.0, 10.0
     elif "Integral" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 5.0, 6.0, 2.0, 0.0
+        def_acucar, def_gord, def_ovos = 5.0, 6.0, 0.0
     elif "Rústico" in perfil:
-        def_acucar, def_gord, def_leite, def_ovos = 0.0, 0.0, 0.0, 0.0
+        def_acucar, def_gord, def_ovos = 0.0, 0.0, 0.0
     else:
-        def_acucar, def_gord, def_leite, def_ovos = 5.0, 5.0, 2.0, 0.0
+        def_acucar, def_gord, def_ovos = float(acucar_pct), float(gordura_pct), float(ovos_pct)
 
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
     with c1:
-        acucar_pct = st.slider("Açúcar (%)", 0.0, 25.0, def_acucar, 0.5)
-        gordura_pct = st.slider("Manteiga / Óleo (%)", 0.0, 30.0, def_gord, 0.5)
+        st.session_state["acucar_pct"] = st.slider("Açúcar (%)", 0.0, 25.0, def_acucar, 0.5)
     with c2:
-        leite_po_pct = st.slider("Leite em Pó (%)", 0.0, 15.0, def_leite, 0.5)
-        ovos_pct = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
+        st.session_state["gordura_pct"] = st.slider("Manteiga / Óleo (%)", 0.0, 30.0, def_gord, 0.5)
+    with c3:
+        st.session_state["ovos_pct"] = st.slider("Ovos (%)", 0.0, 30.0, def_ovos, 1.0)
 
-with aba_custos:
-    st.info(
-        "💰 **Para que serve esta aba?**\n\n"
-        "Insira o preço de compra dos insumos por quilo (ou por unidade nos ovos) para calcular "
-        "o **custo total**, **custo por unidade** e **preço sugerido de venda**."
-    )
-    st.subheader("Tabela de Custos dos Insumos & Margem Comercial")
+    if st.button("🚀 Ir para Calculadora & Gerar Ficha"):
+        st.session_state["pagina_atual"] = "calculadora"
+        st.rerun()
+
+elif pagina == "custos":
+    st.subheader("💰 Tabela de Custos dos Insumos & Margem Comercial")
+    st.info("Informe o preço pago pelos ingredientes para calcular o custo total, custo por pão e preço sugerido.")
     cc1, cc2 = st.columns(2)
     with cc1:
-        c_farinha = st.number_input("Farinha (R$/kg)", min_value=2.0, max_value=20.0, value=5.50, step=0.5)
-        c_fermento = st.number_input("Fermento (R$/kg)", min_value=10.0, max_value=100.0, value=35.0, step=1.0)
-        c_acucar = st.number_input("Açúcar (R$/kg)", min_value=2.0, max_value=15.0, value=4.50, step=0.5)
-        c_sal = st.number_input("Sal (R$/kg)", min_value=1.0, max_value=10.0, value=3.0, step=0.5)
+        st.number_input("Farinha (R$/kg)", min_value=2.0, max_value=20.0, value=float(c_farinha), step=0.5, key="c_farinha")
+        st.number_input("Fermento (R$/kg)", min_value=10.0, max_value=100.0, value=float(c_fermento), step=1.0, key="c_fermento")
+        st.number_input("Açúcar (R$/kg)", min_value=2.0, max_value=15.0, value=float(c_acucar), step=0.5, key="c_acucar")
+        st.number_input("Sal (R$/kg)", min_value=1.0, max_value=10.0, value=float(c_sal), step=0.5, key="c_sal")
     with cc2:
-        c_gordura = st.number_input("Manteiga / Gordura (R$/kg)", min_value=5.0, max_value=60.0, value=18.0, step=1.0)
-        c_leite = st.number_input("Leite em Pó (R$/kg)", min_value=10.0, max_value=80.0, value=30.0, step=1.0)
-        c_ovo_unidade = st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=0.75, step=0.05)
-        margem_lucro = st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, 100.0, 10.0)
+        st.number_input("Manteiga / Gordura (R$/kg)", min_value=5.0, max_value=60.0, value=float(c_gordura), step=1.0, key="c_gordura")
+        st.number_input("Ovo (R$ por UNIDADE)", min_value=0.20, max_value=2.00, value=float(c_ovo_unidade), step=0.05, key="c_ovo_unidade")
+        st.slider("Margem de Lucro Desejada (%)", 20.0, 300.0, float(margem_lucro), 10.0, key="margem_lucro")
 
-with aba_sos:
-    st.info("🆘 **SOS Padeiro:** Clique no problema abaixo para ver a causa provável e como corrigir.")
-    with st.expander("💧 A massa ficou muito mole ou grudenta"):
-        st.markdown(
-            "- **Causa:** Farinha com menos proteína, excesso de água ou falta de glúten.\n"
-            "- **Solução:** Descanse 15 min coberta e faça 2 séries de dobras com mãos untadas. Se precisar, adicione farinha aos poucos (1 col. sopa por vez)."
-        )
-    with st.expander("🧱 O pão ficou pesado, duro ou com miolo fechado"):
-        st.markdown(
-            "- **Causa:** Falta de fermentação, excesso de farinha na bancada ou fermento inativo.\n"
-            "- **Solução:** Teste o fermento em água morna com açúcar (deve espumar em 10 min) e aguarde a massa dobrar de volume."
-        )
-    with st.expander("🌋 O pão rachou na lateral ou abriu fora do corte"):
-        st.markdown(
-            "- **Causa:** Fermentação insuficiente na 2ª etapa ou falta de vapor no início.\n"
-            "- **Solução:** Fermente mais 10-15 min antes de assar e faça o corte em ângulo de 45°."
-        )
-    with st.expander("📉 O pão cresceu muito e murchou no forno"):
-        st.markdown(
-            "- **Causa:** Superfermentação (passou do ponto).\n"
-            "- **Solução:** Faça o teste do dedo: aperte leve; se voltar devagar deixando leve marca, leve ao forno. Em dias quentes (>28 °C), use água gelada."
-        )
-    with st.expander("🥖 A casca ficou pálida ou seca demais"):
-        st.markdown(
-            "- **Causa:** Forno frio ou tempo excessivo em temperatura baixa.\n"
-            "- **Solução:** Preaqueça o forno por 20 min. Use gema + leite em pães macios ou vapor nos primeiros 15 min em pães rústicos."
-        )
+    if st.button("🚀 Voltar para Calculadora"):
+        st.session_state["pagina_atual"] = "calculadora"
+        st.rerun()
 
-with aba_prontas:
-    st.info(
-        "⚡ **Modo Fácil (Para quem quer fazer pão sem complicação):**\n\n"
-        "Escolha o tipo de pão abaixo, diga quantas unidades quer fazer e clique no botão. "
-        "O app já configura todas as proporções profissionais, medidas em xícaras/colheres e o passo a passo!"
-    )
-    col_r1, col_r2 = st.columns([2, 1])
-    with col_r1:
-        receita_escolhida_nome = st.selectbox("Qual pão você quer fazer hoje?", list(RECEITAS_PRONTAS.keys()))
-        preset = RECEITAS_PRONTAS[receita_escolhida_nome]
-        st.caption(f"💡 {preset['descricao']}")
-    with col_r2:
-        qtd_pronta = st.number_input("Quantas unidades?", min_value=1, max_value=100, value=preset["qtd_padrao"], step=1)
-
-    if st.button("🍞 Gerar Receita Pronta Agora", use_container_width=True):
-        peso_total_preset = int(qtd_pronta * preset["peso_porcao_g"])
-        dados_preset = {
-            "marca": f"Receita Padrão ({preset['nome_formato']})",
-            "proteina_g_por_50g": 6.0,
-            "forca_estimada": "Padrão",
-            "hidratacao_minima": preset["hidratacao_pct"],
-            "contem_gluten": True,
-        }
-        calc_p = CalculadoraPanificacao(
-            peso_total_massa=peso_total_preset,
-            hidratacao_pct=preset["hidratacao_pct"],
-            sal_pct=preset["sal_pct"],
-            tipo_fermento=preset["tipo_fermento"],
-            temp_ambiente=temp_ambiente,
-            contem_gluten=True,
-            peso_porcao_g=preset["peso_porcao_g"],
-            nome_formato=preset["nome_formato"],
-            acucar_pct=preset["acucar_pct"],
-            gordura_pct=preset["gordura_pct"],
-            leite_po_pct=preset["leite_po_pct"],
-            ovos_pct=preset["ovos_pct"],
-            custo_farinha_kg=c_farinha,
-            custo_fermento_kg=c_fermento,
-            custo_acucar_kg=c_acucar,
-            custo_gordura_kg=c_gordura,
-            custo_leite_po_kg=c_leite,
-            custo_ovo_unidade=c_ovo_unidade,
-            custo_sal_kg=c_sal,
-            margem_lucro_pct=margem_lucro,
-        )
-        st.session_state["resultado_atual"] = {
-            "dados_ia": dados_preset,
-            "receita": calc_p.calcular(),
-            "integral_pct": preset["integral_pct"],
-        }
-        st.success(f"Receita de {preset['nome_formato']} pronta logo abaixo!")
-
-with aba_calc:
-    st.info(
-        "🚀 **Modo Avançado & Scanner de Farinha:** 1) Configure o planejamento e % de farinha integral na barra lateral. "
-        "2) Opcional: envie foto do rótulo da farinha para análise por IA. "
-        "3) Clique em **Calcular Ficha de Produção Completa**."
-    )
+elif pagina == "calculadora":
+    mostrar_resultado = True
+    st.subheader("🚀 Calculadora Avançada & Scanner de Rótulo")
+    st.info("Configure peso, formato e % de farinha integral na barra lateral. Se quiser, envie a foto da farinha para a IA ler a proteína.")
     col_up, col_prev = st.columns([2, 1])
     with col_up:
-        st.subheader("Scanner de Rótulo & Simulação Manual")
         if usuario_pro:
             foto_upload = st.file_uploader("Enviar foto da tabela nutricional (Opcional)", type=["jpg", "jpeg", "png"])
         else:
@@ -885,9 +1146,7 @@ with aba_calc:
                     if "erro" not in res_ia:
                         dados_ia = res_ia
 
-            # Farinha integral absorve mais água (+8% de hidratação a cada 100% integral)
             hidr_ajustada = int(dados_ia.get("hidratacao_minima", 60) + round(farinha_integral_pct * 0.08))
-
             calc = CalculadoraPanificacao(
                 peso_total_massa=peso_desejado,
                 hidratacao_pct=hidr_ajustada,
@@ -899,13 +1158,13 @@ with aba_calc:
                 nome_formato=nome_formato,
                 acucar_pct=acucar_pct,
                 gordura_pct=gordura_pct,
-                leite_po_pct=leite_po_pct,
+                leite_po_pct=0.0,
                 ovos_pct=ovos_pct,
                 custo_farinha_kg=c_farinha,
                 custo_fermento_kg=c_fermento,
                 custo_acucar_kg=c_acucar,
                 custo_gordura_kg=c_gordura,
-                custo_leite_po_kg=c_leite,
+                custo_leite_po_kg=0.0,
                 custo_ovo_unidade=c_ovo_unidade,
                 custo_sal_kg=c_sal,
                 margem_lucro_pct=margem_lucro,
@@ -914,17 +1173,89 @@ with aba_calc:
                 "dados_ia": dados_ia,
                 "receita": calc.calcular(),
                 "integral_pct": farinha_integral_pct,
+                "metodo": "",
             }
             st.success("Ficha calculada com sucesso!")
 
+elif pagina == "escola":
+    st.subheader("📚 Escola do Pão — Guia Rápido para Iniciantes")
+    with st.expander("🦠 Diferenças entre Fermento Seco, Fresco e Levain", expanded=True):
+        st.markdown(
+            "- **Fermento Biológico Seco (1%):** É o mais prático. Vem em sachê de 10g, não precisa de geladeira antes de abrir e vai direto na farinha.\n"
+            "- **Fermento Biológico Fresco (3%):** Vendido em tabletes refrigerados (15g). Use sempre **3 vezes** o peso do fermento seco. Dissolva na água antes.\n"
+            "- **Levain / Fermento Natural (20%):** Feito apenas de farinha e água fermentados. Traz casca mais crocante, sabor complexo e maior digestibilidade."
+        )
+    with st.expander("🙌 Como Sovar e Identificar o Ponto de Véu"):
+        st.markdown(
+            "- **Na mão:** Empurre a massa para frente com a base da palma, dobre de volta e gire 90°. Repita por 8 a 10 minutos.\n"
+            "- **Ponto de Véu:** Pegue um pedacinho da massa e estique devagar com os dedos. Se abrir fino quase transparente sem rasgar, o glúten está pronto!"
+        )
+    with st.expander("⏱️ Como Fazer o Pão Crescer Mais Rápido (em dias frios)"):
+        st.markdown(
+            "- Use a temperatura da água indicada na ficha técnica.\n"
+            "- Coloque a tigela coberta dentro do **forno desligado** junto com uma caneca de água bem quente ao lado — isso cria uma estufa caseira perfeita."
+        )
+
+elif pagina == "sos":
+    st.subheader("🆘 SOS Padeiro — Guia Visual de Diagnóstico")
+    st.info("Compare o visual do seu pão com os modelos abaixo para descobrir o que aconteceu e como corrigir.")
+
+    with st.expander("💧 A massa ficou muito mole ou grudenta", expanded=True):
+        renderizar_modelo_sos("mole", diretorio_atual)
+        st.markdown(
+            "- **Causa:** Farinha com menos proteína, excesso de água ou falta de desenvolvimento de glúten.\n"
+            "- **Solução imediata:** Descanse 15 min coberta e faça 2 séries de dobras com mãos untadas. Se precisar, adicione farinha aos poucos (1 col. sopa por vez)."
+        )
+    with st.expander("🧱 O pão ficou pesado, duro ou com miolo fechado"):
+        renderizar_modelo_sos("pesado", diretorio_atual)
+        st.markdown(
+            "- **Causa:** Falta de fermentação, excesso de farinha na bancada ou fermento inativo.\n"
+            "- **Solução:** Teste o fermento em água morna com açúcar (deve espumar em 10 min) e aguarde a massa dobrar de volume."
+        )
+    with st.expander("🌋 O pão rachou na lateral ou abriu fora do corte"):
+        renderizar_modelo_sos("rachado", diretorio_atual)
+        st.markdown(
+            "- **Causa:** Fermentação insuficiente na 2ª etapa ou falta de vapor no início.\n"
+            "- **Solução:** Fermente mais 10-15 min antes de assar e faça o corte em ângulo de 45°."
+        )
+    with st.expander("📉 O pão cresceu muito e murchou no forno"):
+        renderizar_modelo_sos("murchou", diretorio_atual)
+        st.markdown(
+            "- **Causa:** Superfermentação (passou do ponto).\n"
+            "- **Solução:** Faça o teste do dedo: aperte leve; se voltar devagar deixando leve marca, leve ao forno. Em dias quentes (>28 °C), use água gelada."
+        )
+    with st.expander("🥖 A casca ficou pálida ou seca demais"):
+        renderizar_modelo_sos("palida", diretorio_atual)
+        st.markdown(
+            "- **Causa:** Forno frio ou tempo excessivo em temperatura baixa.\n"
+            "- **Solução:** Preaqueça o forno por 20 min. Pincele gema em pães macios ou use vapor nos primeiros 15 min em pães rústicos."
+        )
+
+elif pagina == "b2b":
+    st.subheader("📊 Telemetria B2B & Histórico")
+    st.info("Histórico de farinhas escaneadas e simulações salvas no Firebase.")
+    if db is None:
+        st.info("Firebase não configurado.")
+    else:
+        try:
+            docs = db.collection("scans_farinha").stream()
+            lista = [d.to_dict() for d in docs]
+            if lista:
+                st.dataframe(pd.DataFrame(lista), use_container_width=True)
+            else:
+                st.info("Nenhum registo na base de dados.")
+        except Exception as e:
+            st.error(f"Erro: {e}")
+
 # ==========================================
-# 8. EXIBIÇÃO DOS RESULTADOS
+# 10. EXIBIÇÃO DOS RESULTADOS (FICHA TÉCNICA)
 # ==========================================
-if "resultado_atual" in st.session_state:
+if mostrar_resultado and "resultado_atual" in st.session_state:
     res = st.session_state["resultado_atual"]
     dados_ia = res["dados_ia"]
     receita = res["receita"]
     integral_pct = int(res.get("integral_pct", 0) or 0)
+    metodo_forcado = res.get("metodo", "")
     contem_gluten = dados_ia.get("contem_gluten", True)
 
     st.markdown("---")
@@ -937,7 +1268,7 @@ if "resultado_atual" in st.session_state:
 
     unidade_exibicao = st.radio(
         "Escolha como deseja visualizar os ingredientes:",
-        ["⚖️ Balança (gramas / ml)", "🥄 Medidas Caseiras (Xícaras / Colheres)"],
+        ["🥄 Medidas Caseiras (Xícaras / Colheres)", "⚖️ Balança (gramas / ml)"],
         horizontal=True,
     )
     usar_caseira = "Caseiras" in unidade_exibicao
@@ -984,38 +1315,35 @@ if "resultado_atual" in st.session_state:
             m3.metric("🧂 Sal", f"{sal_g} g")
             m4.metric("🦠 Fermento", f"{fermento_g} g")
 
-    if receita.get("massa_enriquecida"):
-        acucar_g = receita.get("acucar_g", 0) or 0
-        gordura_g = receita.get("gordura_g", 0) or 0
-        leite_po_g = receita.get("leite_po_g", 0) or 0
-        ovos_g = receita.get("ovos_g", 0) or 0
-        ovos_un = receita.get("unidades_ovos_inteiras", 0) or 0
+    acucar_g = receita.get("acucar_g", 0) or 0
+    gordura_g = receita.get("gordura_g", 0) or 0
+    ovos_g = receita.get("ovos_g", 0) or 0
+    ovos_un = receita.get("unidades_ovos_inteiras", 0) or 0
 
-        e1, e2, e3, e4 = st.columns(4)
+    if acucar_g > 0 or gordura_g > 0 or ovos_g > 0:
+        e1, e2, e3 = st.columns(3)
         if usar_caseira:
             e1.metric("🍬 Açúcar", converter_medida_caseira(acucar_g, "acucar"), f"{acucar_g} g")
-            e2.metric("🧈 Manteiga", converter_medida_caseira(gordura_g, "gordura"), f"{gordura_g} g")
-            e3.metric("🥛 Leite Pó", converter_medida_caseira(leite_po_g, "leite_po"), f"{leite_po_g} g")
-            e4.metric("🥚 Ovos", f"{ovos_un} un.", f"{ovos_g} g")
+            e2.metric("🧈 Manteiga / Óleo", converter_medida_caseira(gordura_g, "gordura"), f"{gordura_g} g")
+            e3.metric("🥚 Ovos", f"{ovos_un} un.", f"{ovos_g} g")
         else:
             e1.metric("🍬 Açúcar", f"{acucar_g} g")
-            e2.metric("🧈 Manteiga", f"{gordura_g} g")
-            e3.metric("🥛 Leite Pó", f"{leite_po_g} g")
-            e4.metric("🥚 Ovos", f"{ovos_g} g", f"~{ovos_un} unidades")
+            e2.metric("🧈 Manteiga / Óleo", f"{gordura_g} g")
+            e3.metric("🥚 Ovos", f"{ovos_g} g", f"~{ovos_un} unidades")
 
     p1, p2, p3 = st.columns(3)
     p1.metric("🥖 Formato", receita.get("nome_formato", "-"), f"{receita.get('peso_porcao_g', 0)}g/un")
     p2.metric("📦 Rendimento", f"{receita.get('qtd_unidades', 0)} unidades")
     p3.metric("✂️ Sobra", f"{receita.get('sobra_massa_g', 0)} g")
 
-    passos_preparo = gerar_modo_preparo(receita.get("nome_formato", ""), receita, contem_gluten, integral_pct)
+    passos_preparo = gerar_modo_preparo(receita.get("nome_formato", ""), receita, contem_gluten, integral_pct, metodo_forcado)
     with st.expander("👨‍🍳 Modo de Preparo Profissional (Passo a Passo)", expanded=True):
         for passo in passos_preparo:
             st.markdown(passo)
 
     with st.expander("⏰ Cronograma Reverso da Fornada (Planeje o Horário)"):
         hora_alvo = st.time_input("Que horas você quer o pão saindo do forno?", value=datetime.time(18, 0))
-        agenda_fornada = gerar_cronograma_reverso(hora_alvo, receita.get("nome_formato", ""), receita, contem_gluten)
+        agenda_fornada = gerar_cronograma_reverso(hora_alvo, receita.get("nome_formato", ""), receita, contem_gluten, metodo_forcado)
         st.table(pd.DataFrame(agenda_fornada))
 
     with st.expander("🥗 Estimativa de Tabela Nutricional (Referência TACO)"):
@@ -1041,7 +1369,7 @@ if "resultado_atual" in st.session_state:
         st.info("🔒 A análise de **Custos & Precificação** faz parte do Plano PRO.")
 
     # ==========================================
-    # 9. EXPORTAÇÃO: PDF & WHATSAPP
+    # 11. EXPORTAÇÃO: PDF & WHATSAPP
     # ==========================================
     st.markdown("#### 📤 Exportar & Compartilhar")
     if usuario_pro:
@@ -1090,17 +1418,12 @@ if "resultado_atual" in st.session_state:
                 ("Sal", f"{sal_g} g ({converter_medida_caseira(sal_g, 'sal')})"),
                 (f"Fermento ({receita.get('tipo_fermento')})", f"{fermento_g} g ({converter_medida_caseira(fermento_g, chave_ferm)})"),
             ])
-            if (receita.get("acucar_g", 0) or 0) > 0:
-                v = receita.get("acucar_g")
-                linhas.append(("Açúcar", f"{v} g ({converter_medida_caseira(v, 'acucar')})"))
-            if (receita.get("gordura_g", 0) or 0) > 0:
-                v = receita.get("gordura_g")
-                linhas.append(("Manteiga / Gordura", f"{v} g ({converter_medida_caseira(v, 'gordura')})"))
-            if (receita.get("leite_po_g", 0) or 0) > 0:
-                v = receita.get("leite_po_g")
-                linhas.append(("Leite em Pó", f"{v} g ({converter_medida_caseira(v, 'leite_po')})"))
-            if (receita.get("ovos_g", 0) or 0) > 0:
-                linhas.append(("Ovos", f"{receita.get('ovos_g')} g (~{receita.get('unidades_ovos_inteiras')} un.)"))
+            if acucar_g > 0:
+                linhas.append(("Açúcar", f"{acucar_g} g ({converter_medida_caseira(acucar_g, 'acucar')})"))
+            if gordura_g > 0:
+                linhas.append(("Manteiga / Gordura", f"{gordura_g} g ({converter_medida_caseira(gordura_g, 'gordura')})"))
+            if ovos_g > 0:
+                linhas.append(("Ovos", f"{ovos_g} g (~{ovos_un} un.)"))
             if not contem_gluten and "goma_xantana_g" in receita:
                 linhas.append(("Goma Xantana", f"{receita.get('goma_xantana_g')} g"))
 
@@ -1143,18 +1466,3 @@ if "resultado_atual" in st.session_state:
             st.code(texto_wpp, language="text")
     else:
         st.info("🔒 A exportação em **PDF** e o envio direto para **WhatsApp** fazem parte do Plano PRO.")
-
-with aba_b2b:
-    st.info("📊 **Telemetria B2B:** Histórico de farinhas escaneadas e simulações salvas no Firebase.")
-    if db is None:
-        st.info("Firebase não configurado.")
-    else:
-        try:
-            docs = db.collection("scans_farinha").stream()
-            lista = [d.to_dict() for d in docs]
-            if lista:
-                st.dataframe(pd.DataFrame(lista), use_container_width=True)
-            else:
-                st.info("Nenhum registo na base de dados.")
-        except Exception as e:
-            st.error(f"Erro: {e}")
