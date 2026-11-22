@@ -936,20 +936,24 @@ def montar_texto_whatsapp(dados_ia: dict, receita: dict, usar_caseira: bool, cha
     return "\n".join(linhas)
 
 # ==========================================
-# 5. IA / LEITOR DE RÓTULOS & FIREBASE (CONEXÃO + SALVAMENTO)
+# 5. IA / LEITOR DE RÓTULOS & FIREBASE (HIDRATAÇÃO INTELIGENTE)
 # ==========================================
 class RotuloFarinha(BaseModel):
     marca: str = Field(description="Nome comercial ou fabricante da farinha")
     proteina_g_por_50g: float = Field(description="Proteína em gramas para porção de 50g")
     forca_estimada: str = Field(description="'Alta' se proteína >= 6.0, 'Média' se >= 5.0, senão 'Baixa'")
-    hidratacao_minima: int = Field(description="Hidratação recomendada (%): 65 se Alta, 60 se Média, 55 se Baixa")
+    hidratacao_maxima_segura: int = Field(description="Hidratação máxima segura (%): 78 se Alta, 66 se Média, 58 se Baixa")
     contem_gluten: bool = Field(description="True se contiver glúten, False se for sem glúten")
 
 def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
     if not chave_api_val:
         return {"erro": "Chave da API Gemini não configurada no servidor."}
     client = genai.Client(api_key=chave_api_val)
-    prompt = "Analise o rótulo/tabela nutricional desta farinha. Extraia marca, proteína por 50g, força, hidratação mínima e contem_gluten."
+    prompt = (
+        "Analise o rótulo/tabela nutricional desta farinha. Extraia marca, proteína por 50g, "
+        "força ('Alta' >= 6.0g, 'Média' >= 5.0g, 'Baixa' < 5.0g), hidratacao_maxima_segura "
+        "(78 se Alta, 66 se Média, 58 se Baixa) e contem_gluten."
+    )
     configuracao = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=RotuloFarinha,
@@ -962,6 +966,36 @@ def analisar_imagem_farinha(img: Image.Image, chave_api_val: str) -> dict:
         except Exception:
             continue
     return {"erro": "Falha na análise com a IA Gemini."}
+
+def calcular_hidratacao_inteligente(hidr_base_pao: int, integral_pct: int, dados_ia: dict) -> tuple:
+    hidr_alvo = int(hidr_base_pao + round(integral_pct * 0.08))
+    proteina = float(dados_ia.get("proteina_g_por_50g", 6.0) or 6.0)
+
+    if "hidratacao_maxima_segura" in dados_ia:
+        hidr_max_farinha = int(dados_ia["hidratacao_maxima_segura"])
+    else:
+        if proteina >= 6.0:
+            hidr_max_farinha = 78
+        elif proteina >= 5.0:
+            hidr_max_farinha = 66
+        else:
+            hidr_max_farinha = 58
+
+    # Farinha integral absorve mais líquido naturalmente
+    hidr_max_efetiva = hidr_max_farinha + round(integral_pct * 0.06)
+
+    if not dados_ia.get("contem_gluten", True):
+        return max(hidr_alvo, 78), ""
+
+    if hidr_alvo > hidr_max_efetiva:
+        alerta = (
+            f"⚠️ **Proteção de Farinha Ativada:** O estilo escolhido pede **{hidr_alvo}%** de hidratação, "
+            f"mas a farinha **{dados_ia.get('marca')}** ({proteina}g prot./50g — força {dados_ia.get('forca_estimada')}) "
+            f"suporta com segurança até **{hidr_max_efetiva}%**. Ajustamos automaticamente para a massa não perder estrutura!"
+        )
+        return int(hidr_max_efetiva), alerta
+
+    return int(hidr_alvo), ""
 
 erro_firebase = None
 if not firebase_admin._apps:
@@ -1003,7 +1037,7 @@ def salvar_telemetria_firebase(dados_ia: dict, receita: dict, origem: str = "Sca
             "contem_gluten": dados_ia.get("contem_gluten", True),
             "formato": receita.get("nome_formato", "-"),
             "peso_total_g": receita.get("peso_total_g", 0),
-            "hidratacao_pct": receita.get("hidratacao_pct", 0),
+            "hidratacao_aplicada": receita.get("hidratacao_pct", 0),
             "qtd_unidades": receita.get("qtd_unidades", 0),
             "custo_total_r$": round(float(receita.get("custo_total_fornada", 0) or 0), 2),
         }
@@ -1071,7 +1105,7 @@ def gerar_receita_preset(receita_id: str, qtd_override: int = None, temp_amb: fl
         "marca": f"Receita Padrão ({preset['nome_formato']})",
         "proteina_g_por_50g": 6.0,
         "forca_estimada": "Padrão",
-        "hidratacao_minima": preset["hidratacao_pct"],
+        "hidratacao_maxima_segura": 78,
         "contem_gluten": tem_gluten,
     }
     calc_p = CalculadoraPanificacao(
@@ -1102,6 +1136,7 @@ def gerar_receita_preset(receita_id: str, qtd_override: int = None, temp_amb: fl
         "integral_pct": preset["integral_pct"],
         "metodo": preset.get("metodo", "macio"),
         "extra_nota": preset.get("extra_nota", ""),
+        "alerta_hidratacao": "",
     }
 
 qp = st.query_params
@@ -1202,19 +1237,19 @@ cabecalho_e_menu = f"""
 st.markdown(cabecalho_e_menu, unsafe_allow_html=True)
 
 # ==========================================
-# 8. BARRA LATERAL CONTEXTUAL
+# 8. BARRA LATERAL CONTEXTUAL (COM HIDRATAÇÃO BASE POR ESTILO)
 # ==========================================
 FORMATOS_PADARIA = {
-    "Pão de Cachorro-Quente (70g)": 70,
-    "Pão Francês (75g)": 75,
-    "Pão de Hambúrguer / Brioche (90g)": 90,
-    "Focaccia Individual (250g)": 250,
-    "Pão de Forma Tradicional (550g)": 550,
-    "Pão Integral Tradicional (550g)": 550,
-    "Pão de Forma Grande (650g)": 650,
-    "Pão Rústico / Campagne (800g)": 800,
-    "Personalizado (Definir gramas)": 0,
-    "Peça Única (Sem divisão)": -1,
+    "Pão de Cachorro-Quente (70g)": {"peso": 70, "hidr_base": 58},
+    "Pão Francês (75g)": {"peso": 75, "hidr_base": 62},
+    "Pão de Hambúrguer / Brioche (90g)": {"peso": 90, "hidr_base": 55},
+    "Focaccia Individual (250g)": {"peso": 250, "hidr_base": 75},
+    "Pão de Forma Tradicional (550g)": {"peso": 550, "hidr_base": 60},
+    "Pão Integral Tradicional (550g)": {"peso": 550, "hidr_base": 64},
+    "Pão de Forma Grande (650g)": {"peso": 650, "hidr_base": 60},
+    "Pão Rústico / Campagne (800g)": {"peso": 800, "hidr_base": 70},
+    "Personalizado (Definir gramas)": {"peso": 0, "hidr_base": 62},
+    "Peça Única (Sem divisão)": {"peso": -1, "hidr_base": 65},
 }
 
 with st.sidebar:
@@ -1241,7 +1276,9 @@ with st.sidebar:
         ]
         modo_planeamento = st.radio("Modo de Cálculo:", opcoes_modo)
         formato_escolhido = st.selectbox("Formato do Pão", list(FORMATOS_PADARIA.keys()))
-        peso_padrao = FORMATOS_PADARIA[formato_escolhido]
+        cfg_formato = FORMATOS_PADARIA[formato_escolhido]
+        peso_padrao = cfg_formato["peso"]
+        hidr_base_estilo = cfg_formato["hidr_base"]
 
         if peso_padrao == 0:
             peso_porcao_g = st.number_input("Peso por unidade (g)", min_value=20, max_value=3000, value=100, step=5)
@@ -1252,6 +1289,8 @@ with st.sidebar:
         else:
             peso_porcao_g = peso_padrao
             nome_formato = formato_escolhido.split(" (")[0]
+
+        st.caption(f"💧 Hidratação base do estilo: **{hidr_base_estilo}%**")
 
         if modo_planeamento == "Pelo Peso Total da Massa (g)":
             peso_desejado = st.slider("Peso Total (g)", 500, 15000, 3500, 100)
@@ -1365,7 +1404,10 @@ elif pagina == "custos":
 elif pagina == "calculadora":
     mostrar_resultado = True
     st.subheader("🚀 Calculadora Avançada & Scanner de Rótulo")
-    st.info("Configure peso, formato e % de farinha integral na barra lateral. Se quiser, envie a foto da farinha para a IA ler a proteína e salvar no histórico.")
+    st.info(
+        "Configure peso, formato e % de farinha integral na barra lateral. "
+        "A hidratação agora combina automaticamente o **estilo do pão** com a **força real da farinha escaneada**."
+    )
     col_up, col_prev = st.columns([2, 1])
     with col_up:
         if usuario_pro:
@@ -1386,7 +1428,7 @@ elif pagina == "calculadora":
                 "marca": "Farinha Padrão / Manual",
                 "proteina_g_por_50g": 6.0,
                 "forca_estimada": "Alta",
-                "hidratacao_minima": 60,
+                "hidratacao_maxima_segura": 78,
                 "contem_gluten": True,
             }
             origem_calc = "Simulação Manual"
@@ -1401,10 +1443,11 @@ elif pagina == "calculadora":
                     else:
                         st.warning(res_ia["erro"])
 
-            hidr_ajustada = int(dados_ia.get("hidratacao_minima", 60) + round(farinha_integral_pct * 0.08))
+            hidr_final, alerta_hidr = calcular_hidratacao_inteligente(hidr_base_estilo, farinha_integral_pct, dados_ia)
+
             calc = CalculadoraPanificacao(
                 peso_total_massa=peso_desejado,
-                hidratacao_pct=hidr_ajustada,
+                hidratacao_pct=hidr_final,
                 sal_pct=sal_pct,
                 tipo_fermento=fermento_limpo,
                 temp_ambiente=temp_ambiente,
@@ -1431,12 +1474,13 @@ elif pagina == "calculadora":
                 "integral_pct": farinha_integral_pct,
                 "metodo": "",
                 "extra_nota": "",
+                "alerta_hidratacao": alerta_hidr,
             }
             salvou_bd = salvar_telemetria_firebase(dados_ia, receita_gerada, origem=origem_calc)
             if salvou_bd:
-                st.success("Ficha calculada e salva no banco de dados Firebase!")
+                st.success(f"Ficha calculada ({hidr_final}% de hidratação) e salva no banco de dados Firebase!")
             else:
-                st.success("Ficha calculada com sucesso!")
+                st.success(f"Ficha calculada com sucesso ({hidr_final}% de hidratação)!")
 
 elif pagina == "escola":
     st.subheader("📚 Escola do Pão — Guia Rápido para Iniciantes")
@@ -1501,18 +1545,7 @@ elif pagina == "b2b":
         st.markdown(
             "**Como ativar no Streamlit Cloud:**\n"
             "1. Abra **Settings → Secrets** do seu app no Streamlit Cloud.\n"
-            "2. Cole os campos do seu `firebase_key.json` dentro de uma seção `[firebase]`:\n"
-            "```toml\n"
-            "[firebase]\n"
-            "type = \"service_account\"\n"
-            "project_id = \"seu-projeto\"\n"
-            "private_key_id = \"...\"\n"
-            "private_key = \"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\"\n"
-            "client_email = \"...\"\n"
-            "client_id = \"...\"\n"
-            "auth_uri = \"[https://accounts.google.com/o/oauth2/auth](https://accounts.google.com/o/oauth2/auth)\"\n"
-            "token_uri = \"[https://oauth2.googleapis.com/token](https://oauth2.googleapis.com/token)\"\n"
-            "```"
+            "2. Cole os campos do seu `firebase_key.json` dentro de uma seção `[firebase]`."
         )
     else:
         try:
@@ -1535,9 +1568,12 @@ if mostrar_resultado and "resultado_atual" in st.session_state:
     integral_pct = int(res.get("integral_pct", 0) or 0)
     metodo_forcado = res.get("metodo", "")
     extra_nota = res.get("extra_nota", "")
+    alerta_hidratacao = res.get("alerta_hidratacao", "")
     contem_gluten = dados_ia.get("contem_gluten", True)
 
     st.markdown("---")
+    if alerta_hidratacao:
+        st.warning(alerta_hidratacao)
     if not contem_gluten:
         st.warning("⚠️ **PROTOCOLO SEM GLÚTEN:** Adicionado 2% de Goma Xantana.")
     if integral_pct > 0:
@@ -1545,7 +1581,10 @@ if mostrar_resultado and "resultado_atual" in st.session_state:
     if extra_nota:
         st.warning(extra_nota)
 
-    st.subheader(f"📋 Ficha Técnica — {dados_ia.get('marca')} ({receita.get('peso_total_g', 0)}g de Massa)")
+    st.subheader(
+        f"📋 Ficha Técnica — {dados_ia.get('marca')} "
+        f"({receita.get('peso_total_g', 0)}g de Massa | {receita.get('hidratacao_pct', 0)}% Hidratação)"
+    )
 
     unidade_exibicao = st.radio(
         "Escolha como deseja visualizar os ingredientes:",
@@ -1732,21 +1771,3 @@ if mostrar_resultado and "resultado_atual" in st.session_state:
 
         texto_wpp = montar_texto_whatsapp(dados_ia, receita, usar_caseira, chave_ferm, passos_preparo, integral_pct)
         url_wpp = "https://wa.me/?text=" + quote(texto_wpp)
-
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            if len(bytes_pdf) > 0:
-                st.download_button(
-                    label="📄 Baixar Ficha Técnica em PDF",
-                    data=bytes_pdf,
-                    file_name=f"ficha_tecnica_{nome_formato_limpo}_{peso_total_int}g.pdf",
-                    mime="application/pdf",
-                    use_container_width=True,
-                )
-        with col_btn2:
-            st.link_button("📲 Enviar Ficha pelo WhatsApp", url_wpp, use_container_width=True)
-
-        with st.expander("📋 Copiar texto pronto para WhatsApp"):
-            st.code(texto_wpp, language="text")
-    else:
-        st.info("🔒 A exportação em **PDF** e o envio direto para **WhatsApp** fazem parte do Plano PRO.")
